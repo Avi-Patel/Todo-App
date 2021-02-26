@@ -1,0 +1,449 @@
+body {
+  font-family: sans-serif;
+  background-color: black;
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+}
+input:focus,
+button:focus,
+select:focus {
+  outline: none;
+}
+* {
+  box-sizing: border-box;
+  margin: 0px;
+  padding: 0px;
+}
+.dispBlock {
+  display: block;
+}
+.cgreen {
+  color: #3e8e41;
+}
+.cyellow {
+  color: yellow;
+}
+.cred {
+  color: red;
+}
+.cwhite {
+  color: white;
+}
+.b4 {
+  border-radius: 4px;
+}
+.b8 {
+  border-radius: 8px;
+}
+.b12 {
+  border-radius: 12px;
+}
+.pad4 {
+  padding: 4px;
+}
+.pad8 {
+  padding: 8px;
+}
+.pad10 {
+  padding: 10px;
+}
+.pad12 {
+  padding: 12px;
+}
+.padTB8 {
+  padding: 8px 0px;
+}
+.padLR8 {
+  padding: 0px 8px;
+}
+.padLR12 {
+  padding: 0px 20px;
+}
+.mar4 {
+  margin: 4px;
+}
+.mar8 {
+  margin: 8px;
+}
+.mar10 {
+  margin: 10px;
+}
+.marTB8 {
+  margin: 8px 0px;
+}
+.marLR8 {
+  margin: 0px 8px;
+}
+.marT8 {
+  margin-top: 8px;
+}
+.marB8 {
+  margin-bottom: 8px;
+}
+.greenBtn {
+  padding: 8px 12px;
+  /* background-color: #3e8e41; */
+  background-color: black;
+  color: white;
+  font-weight: bold;
+  border-radius: 8px;
+  border: 1px solid green;
+}
+.greenBtn:hover {
+  cursor: pointer;
+  background-color: rgb(77, 77, 77);
+}
+.textCenter {
+  text-align: center;
+}
+.normalBoldTitle {
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+}
+.normalTitle {
+  color: white;
+  font-size: 16px;
+}
+.header {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: rgb(120, 120, 120);
+}
+.headerLeft {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-evenly;
+  padding: 10px 0px;
+  width: 600px;
+  border-top-right-radius: 50%;
+  border-bottom-right-radius: 50%;
+  background-color: rgb(45, 45, 45);
+}
+.headerRight {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  padding-right: 50px;
+}
+.headerName {
+  color: white;
+  font-size: 40px;
+  font-weight: bold;
+}
+.headerDate {
+  padding: 0px 20px;
+  color: white;
+}
+
+.searchInput {
+  border: none;
+  width: 300px;
+}
+.mainContent {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+.featureBox {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  width: 20%;
+  height: 100%;
+  background-color: rgb(120, 120, 120);
+  margin-right: 4px;
+  overflow: scroll;
+}
+
+.filterBox {
+  background-color: rgb(45, 45, 45);
+  width: 100%;
+  box-shadow: 0px 6px 10px -6px white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+.filterAttrBox {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-evenly;
+}
+.filterBtns{
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+}
+.notCompletedBox {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.notCompletedCheckBox {
+  height: 20px;
+  width: 20px;
+}
+.iconBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  font-size: 20px;
+  width: 50px;
+  height: 50px;
+  margin: 0px 8px;
+  border-radius: 50%;
+  background-color: black;
+}
+.iconBtn:hover {
+  background-color: rgb(45, 45, 45);
+  cursor: pointer;
+  box-shadow: 0px 0px 4px 2px white;
+}
+
+.createTDTitle {
+  background-color: white;
+  font-size: 30px;
+  font-weight: bold;
+  width: 100%;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  text-align: center;
+  padding: 30px 0px;
+  margin-top: 0px;
+}
+
+.TDTitle {
+  border-radius: 20px;
+  width: 100%;
+  border: 1px solid black;
+  font-size: 14px;
+}
+.selectTDPreference {
+  border-radius: 20px;
+  width: 100%;
+  border: 1px solid black;
+  font-size: 14px;
+}
+
+.TDaddBtn {
+  margin: 8px 0px;
+  width: 60px;
+  height: 60px;
+  font-size: 24px;
+  box-shadow: 0px 0px 4px 2px white;
+}
+.percentageCircle {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: white;
+  font-weight: bold;
+  font-size: 30px;
+  box-shadow: 0px 0px 4px 2px gray;
+}
+.percetageText {
+  font-weight: bold;
+  font-size: 30px;
+}
+.ratioText {
+  font-size: 12px;
+}
+.todosBox {
+  width: 80%;
+  height: 100%;
+  background-color: rgb(120, 120, 120);
+  margin-left: 4px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-evenly;
+  overflow: scroll;
+}
+.fixedSelectionBtns {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  top: 40%;
+  left: 21%;
+  z-index: 100;
+}
+.fixedHiddenText {
+  padding: 10px 10px;
+  background-color: white;
+  color: black;
+  border-radius: 12px;
+  display: none;
+}
+.expand:hover + .fixedHiddenText {
+  display: block;
+}
+.TDitem {
+  width: 18%;
+  min-width: 15%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-evenly;
+  background-color: rgb(45, 45, 45);
+  box-shadow: 0px 6px 10px -6px white;
+  padding-bottom: 30px;
+}
+.TDitem .visiblyAltered {
+  visibility: hidden;
+}
+.TDitem:hover .visiblyAltered {
+  visibility: visible;
+}
+.topTwoBtns {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.iconBtnExtra {
+  width: 40px;
+  height: 40px;
+  margin: 0px;
+  box-shadow: 0px 0px 1px 1px gray;
+}
+
+.TDicon {
+  font-size: 40px;
+}
+.markCompleted {
+  border-radius: 20px;
+}
+.selectWhiteCircle {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: white;
+  border: none;
+}
+.selectBlueCircle {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: wheat;
+}
+.selectAndDeleteCircle:hover {
+  cursor: pointer;
+}
+
+.reduceOpacity {
+  opacity: 0.6;
+}
+.originalOpacity {
+  opacity: 1;
+}
+
+.updateModal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed; /* Stay in place */
+  z-index: 200; /* Sit on top */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgba(200, 200, 200, 0.4);
+  transition: 1s;
+}
+.modalContent {
+  background-color: rgb(45, 45, 45);
+  display: flex;
+  width: 20%;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+.updateToDoTitle {
+  border-radius: 20px;
+}
+.updateModalPreference {
+  border-radius: 20px;
+  width: 100%;
+}
+
+#snackbar {
+  visibility: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: white;
+  color: black;
+  border-radius: 2px;
+  padding: 16px;
+  position: fixed;
+  z-index: 100;
+  bottom: 0px;
+  left: 50px;
+  right: 50px;
+  font-size: 17px;
+}
+
+#snackbar.show {
+  visibility: visible;
+  -webkit-animation: fadein 0.5s, fadeout 0.5s 3.5s;
+  animation: fadein 0.5s, fadeout 0.5s 3.5s;
+}
+
+@-webkit-keyframes fadein {
+  from {
+    bottom: -30px;
+    opacity: 0;
+  }
+  to {
+    bottom: 0px;
+    opacity: 1;
+  }
+}
+
+@keyframes fadein {
+  from {
+    bottom: -30px;
+    opacity: 0;
+  }
+  to {
+    bottom: 0px;
+    opacity: 1;
+  }
+}
+
+@-webkit-keyframes fadeout {
+  from {
+    bottom: 0px;
+    opacity: 1;
+  }
+  to {
+    bottom: -30px;
+    opacity: 0;
+  }
+}
+
+@keyframes fadeout {
+  from {
+    bottom: 0px;
+    opacity: 1;
+  }
+  to {
+    bottom: -30px;
+    opacity: 0;
+  }
+}

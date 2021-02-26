@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Parcel Sandbox</title>
+  <meta charset="UTF-8" />
+  <link rel="stylesheet" href="src/styles.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+
+<body>
+  <div class="header b8 mar4">
+    <div class="headerLeft">
+      <div class="headerName">To-Do App</div>
+      <div class="headerDate" id="headerDate">*** *** ** 20**</div>
+    </div>
+    <div class="headerRight">
+      <input type="text" class="searchInput b8 pad10 marLR8" id="searchInput" placeholder="search todos" />
+      <button class="greenBtn" id="clearBtn">Clear</button>
+    </div>
+  </div>
+  <div class="mainContent mar4">
+    <div class="featureBox b8 pad8">
+      <div class="filterBox b12 pad8">
+        <div class="filterAttrBox padTB8" id="urgencyFilter">
+          <div class="normalBoldTitle padLR8">Urgency</div>
+          <div class="filterBtns">
+            <button class="iconBtn cgreen" id="lowUrgency">
+              <i class="fa fa-exclamation-triangle"></i>
+            </button>
+            <button class="iconBtn cyellow" id="mediumUrgency">
+              <i class=" fa fa-exclamation-triangle "></i>
+            </button>
+            <button class="iconBtn cred" id="highUrgency">
+              <i class=" fa fa-exclamation-triangle "></i>
+            </button>
+          </div>
+        </div>
+        <div class="filterAttrBox padTB8" id="categoryFilter">
+          <div class="normalBoldTitle padLR8">Category</div>
+          <div class="filterBtns">
+            <button class="iconBtn cwhite" id="personalCategory">
+              <i class="fa fa-user "></i>
+            </button>
+            <button class="iconBtn cwhite" id="academicCategory">
+              <i class="fa fa-book "></i>
+            </button>
+            <button class="iconBtn cwhite" id="socialCategory">
+              <i class="fa fa-users "></i>
+            </button>
+          </div>
+        </div>
+        <div class="notCompletedBox mar8 pad8">
+          <input type="checkbox" name="notCompleted" id="notCompletedCheckBox" class="notCompletedCheckBox mar8" />
+          <div class="normalBoldTitle">Not Completed</div>
+        </div>
+        <div class="normalBoldTitle padTB8">Filter Todos</div>
+      </div>
+      <div class="filterBox b12 pad8 marT8">
+        <div class="createTDTitle mar8">Create ToDo</div>
+        <input type="text" class="TDTitle mar8 pad12" id="TDTitle" placeholder="Add ToDo Title" />
+        <div class="normalBoldTitle mar8">Urgency</div>
+        <select name="urgency" id="urgencySelect" class="selectTDPreference mar8 pad12">
+          <option value="low" class="attribute">Low</option>
+          <option value="medium" class="attribute">Medium</option>
+          <option value="high" class="attribute">High</option>
+        </select>
+        <div class="normalBoldTitle mar8">Category</div>
+        <select name="category" id="categorySelect" class="selectTDPreference mar8 pad12">
+          <option value="personal" class="attribute">Personal</option>
+          <option value="academic" class="attribute">Academic</option>
+          <option value="social" class="attribute">Social</option>
+        </select>
+        <button class="iconBtn TDaddBtn" id="TDaddBtn">
+          <div class="fa fa-plus cwhite"></div>
+        </button>
+      </div>
+      <div class="filterBox b12 pad8 marT8">
+        <div class="percentageCircle">
+          <div class="percetageText" id="percentageText">0 %</div>
+          <div class="ratioText" id="ratioText">0 / 0</div>
+        </div>
+        <div class="normalBoldTitle mar8">Analytics</div>
+      </div>
+    </div>
+    <div class="fixedSelectionBtns" id="fixedSelectionBtns">
+      <div class="marTB8" style="display: flex; align-items: center;">
+        <button class="iconBtn expand" id="completeSelection">
+          <div class="fa fa-check-square cwhite"></div>
+        </button>
+        <div class="fixedHiddenText">Complete Selection</div>
+      </div>
+      <div class="marTB8" style="display: flex; align-items: center;">
+        <button class="iconBtn expand" id="clearSelection">
+          <div class="fa fa-square-o cwhite"></div>
+        </button>
+        <div class="fixedHiddenText">Clear Selection</div>
+      </div>
+      <div class="marTB8" style="display: flex; align-items: center;">
+        <button class="iconBtn expand" id="deleteSelection">
+          <div class="fa fa-minus-square cwhite"></div>
+        </button>
+        <div class="fixedHiddenText">Delete Selection</div>
+      </div>
+    </div>
+    <div class="todosBox b8 pad8" id="todosBox"></div>
+  </div>
+  <div id="snackbar"></div>
+  <script type="module" src="src/index.js"></script>
+</body>
+
+</html>
