@@ -1,241 +1,282 @@
 import { checkAndRenderOneToDo, displayToDos } from "/src/renderFunction.js";
-import {
-  updateToDoInDatabase,
-  deleteToDoFromDatabase,
-  createToDoInDatabase,
-  bulkUpdateInDatabase,
-  bulkCreateInDatabase,
-  bulkDeleteFromDatabase,
-} from "/src/server.js";
+// import {
+//   updateToDoInDatabase,
+//   deleteToDoFromDatabase,
+//   createToDoInDatabase,
+//   bulkUpdateInDatabase,
+//   bulkCreateInDatabase,
+//   bulkDeleteFromDatabase,
+// } from "/src/server.js";
 import { updateCountsForRemovedToDo, updateAnalytics } from "/src/analytics.js";
 import { showSnackbar, copyContent } from "/src/otherFunctions.js";
 import { deleteDocumentElementUsingSelector } from "/src/index.js";
-import {
-  data,
-  queriedElements,
-  pushNewToDo,
-  deleteToDoAtAnyIndex,
-  insertToDoAtAnyIndex,
-  alterCompletedProperty,
-  getIndexInLocalDatabase,
-} from "/src/localDataAndElements.js";
+// import {
+//   localDataInCurrentState
+// } from "/src/localDataAndElements.js";
 import { commands } from "/src/consts.js";
 
-const history = {
-  position: -1,
-  actions: [],
-};
+// const history = {
+//   position: -1,
+//   actions: [],
+// };
 
-const undoRedoOnCreate = (id, toDo, isUndo) => {
-  if (isUndo) {
-    deleteToDoFromDatabase(id)
-      .then(() => {
-        deleteToDoAtAnyIndex(getIndexInLocalDatabase(id), 1);
-        updateCountsForRemovedToDo(toDo);
-        updateAnalytics();
-        deleteDocumentElementUsingSelector(`[data-id="${id}"]`);
-        history.position--;
-      })
-      .catch((e) => showSnackbar(e));
-  } else {
-    createToDoInDatabase(toDo)
-      .then(() => {
-        pushNewToDo({ ...toDo });
-        checkAndRenderOneToDo(data.allTodos[data.allTodos.length - 1]);
-        history.position++;
-      })
-      .catch((e) => showSnackbar(e));
-  }
-};
-
-const findIndexToInsert = (id) => {
-  let index = data.allTodos.length;
-  data.allTodos.forEach((toDo, i) => {
-    if (toDo.ID > id && i > 0 && data.allTodos[i - 1].ID < id) {
-      index = i;
-    }
-  });
-  if (data.allTodos.length === 0 || id < data.allTodos[0].ID) {
-    index = 0;
-  }
-  return index;
-};
-
-const undoRedoOnDelete = (id, toDo, isUndo) => {
-  if (isUndo) {
-    createToDoInDatabase(toDo)
-      .then(() => {
-        const index = findIndexToInsert(id);
-        insertToDoAtAnyIndex(index, toDo);
-        history.position--;
-        displayToDos();
-      })
-      .catch((e) => showSnackbar(e));
-  } else {
-    deleteToDoFromDatabase(id)
-      .then(() => {
-        deleteToDoAtAnyIndex(getIndexInLocalDatabase(id));
-        history.position++;
-        displayToDos();
-      })
-      .catch((e) => showSnackbar(e));
-  }
-};
-
-const undoRedoOnEdit = (id, toDo, oldToDo, isUndo) => {
-  let toDoCopy = {};
-  if (isUndo) {
-    toDoCopy = { ...oldToDo };
-  } else {
-    toDoCopy = { ...toDo };
-  }
-  updateToDoInDatabase(id, toDoCopy)
-    .then((returnedToDo) => {
-      copyContent(data.allTodos[getIndexInLocalDatabase(id)], returnedToDo);
-      displayToDos();
-      if (isUndo) {
-        history.position--;
-      } else {
-        history.position++;
+export const historyActions = (mockServer, localData) => {
+  return {
+    position: -1,
+    actions: [],
+    addActions: (commandType, toDoIDs, toDos, oldToDos) => {
+      this.actions = this.actions.slice(0, this.position + 1);
+      const newAction = {
+        command: commandType,
+        IDs: toDoIDs,
+      };
+      if (toDos) {
+        newAction["toDos"] = toDos;
       }
-    })
-    .catch((e) => showSnackbar(e));
-};
-
-const undoRedoOnDeleteInBulk = (ids, deletedToDos, isUndo) => {
-  if (isUndo) {
-    bulkCreateInDatabase(deletedToDos)
-      .then(() => {
-        deletedToDos.forEach((toDo) =>
-          insertToDoAtAnyIndex(findIndexToInsert(toDo.ID), { ...toDo })
-        );
-        history.position--;
-        displayToDos();
-      })
-      .catch((e) => showSnackbar(e));
-  } else {
-    bulkDeleteFromDatabase(ids)
-      .then(() => {
-        ids.forEach((id) => deleteToDoAtAnyIndex(getIndexInLocalDatabase(id)));
-        history.position++;
-        displayToDos();
-      })
-      .catch((e) => showSnackbar(e));
-  }
-};
-
-const undoRedoOnAlterCompletionInBulk = (ids, isUndo) => {
-  const indexs = [];
-  const toDos = [];
-  ids.forEach((id, i) => {
-    const index = getIndexInLocalDatabase(id);
-    indexs.push(index);
-    toDos.push({ ...data.allTodos[index] });
-    toDos[i].completed = !toDos[i].completed;
-  });
-  bulkUpdateInDatabase(ids, toDos)
-    .then(() => {
-      indexs.forEach((index) => alterCompletedProperty(index));
-      displayToDos();
-      if (isUndo) {
-        history.position--;
-      } else {
-        history.position++;
+      if (oldToDos) {
+        newAction["oldToDos"] = oldToDos;
       }
-    })
-    .catch((e) => showSnackbar(e));
-};
+      this.actions.push(newAction);
+      this.position++;
+    },
 
-export const undo = () => {
-  if (history.position === -1) return;
-  console.log(history.position);
+    redo: () => {
+      if (this.position === this.actions.length - 1) return;
+      console.log(this.position);
+      switch (this.actions[this.position + 1].command) {
+        case commands.EDIT:
+          undoRedoOnEdit(
+            this.actions[this.position + 1]["IDs"][0],
+            this.actions[this.position + 1]["toDos"][0],
+            this.actions[this.position + 1]["oldToDos"][0],
+            false
+          );
+          break;
+        case commands.ALTERCOMPLETIONINBULK:
+          undoRedoOnAlterCompletionInBulk(
+            this.actions[this.position + 1]["IDs"],
+            false
+          );
+          break;
+        case commands.CREATE:
+          undoRedoOnCreate(
+            this.actions[this.position + 1]["IDs"][0],
+            this.actions[this.position + 1]["toDos"][0],
+            false
+          );
+          break;
+        case commands.DELETE:
+          undoRedoOnDelete(
+            this.actions[this.position + 1]["IDs"][0],
+            this.actions[this.position + 1]["oldToDos"][0],
+            false
+          );
+          break;
+        case commands.DELETEINBULK:
+          undoRedoOnDeleteInBulk(
+            this.actions[this.position + 1]["IDs"],
+            this.actions[this.position + 1]["oldToDos"],
+            false
+          );
+          break;
+        default:
+          break;
+      }
+    },
 
-  switch (history["actions"][history.position].command) {
-    case commands.EDIT:
-      undoRedoOnEdit(
-        history["actions"][history.position]["IDs"][0],
-        history["actions"][history.position]["toDos"][0],
-        history["actions"][history.position]["oldToDos"][0],
-        true
-      );
-      break;
-    case commands.ALTERCOMPLETIONINBULK:
-      undoRedoOnAlterCompletionInBulk(
-        history["actions"][history.position]["IDs"],
-        true
-      );
-      break;
-    case commands.CREATE:
-      undoRedoOnCreate(
-        history["actions"][history.position]["IDs"][0],
-        history["actions"][history.position]["toDos"][0],
-        true
-      );
-      break;
-    case commands.DELETE:
-      undoRedoOnDelete(
-        history["actions"][history.position]["IDs"][0],
-        history["actions"][history.position]["oldToDos"][0],
-        true
-      );
-      break;
-    case commands.DELETEINBULK:
-      undoRedoOnDeleteInBulk(
-        history["actions"][history.position]["IDs"],
-        history["actions"][history.position]["oldToDos"],
-        true
-      );
-      break;
-    default:
-      break;
-  }
-};
-export const redo = () => {
-  if (history.position === history.actions.length - 1) return;
-  console.log(history.position);
-  switch (history["actions"][history.position + 1].command) {
-    case commands.EDIT:
-      undoRedoOnEdit(
-        history["actions"][history.position + 1]["IDs"][0],
-        history["actions"][history.position + 1]["toDos"][0],
-        history["actions"][history.position + 1]["oldToDos"][0],
-        false
-      );
-      break;
-    case commands.ALTERCOMPLETIONINBULK:
-      undoRedoOnAlterCompletionInBulk(
-        history["actions"][history.position + 1]["IDs"],
-        false
-      );
-      break;
-    case commands.CREATE:
-      undoRedoOnCreate(
-        history["actions"][history.position + 1]["IDs"][0],
-        history["actions"][history.position + 1]["toDos"][0],
-        false
-      );
-      break;
-    case commands.DELETE:
-      undoRedoOnDelete(
-        history["actions"][history.position + 1]["IDs"][0],
-        history["actions"][history.position + 1]["oldToDos"][0],
-        false
-      );
-      break;
-    case commands.DELETEINBULK:
-      undoRedoOnDeleteInBulk(
-        history["actions"][history.position + 1]["IDs"],
-        history["actions"][history.position + 1]["oldToDos"],
-        false
-      );
-      break;
-    default:
-      break;
-  }
+    undo: () => {
+      if (this.position === -1) return;
+      console.log(this.position);
+
+      switch (this.actions[this.position].command) {
+        case commands.EDIT:
+          undoRedoOnEdit(
+            this.actions[this.position]["IDs"][0],
+            this.actions[this.position]["toDos"][0],
+            this.actions[this.position]["oldToDos"][0],
+            true
+          );
+          break;
+        case commands.ALTERCOMPLETIONINBULK:
+          undoRedoOnAlterCompletionInBulk(
+            this.actions[this.position]["IDs"],
+            true
+          );
+          break;
+        case commands.CREATE:
+          undoRedoOnCreate(
+            this.actions[this.position]["IDs"][0],
+            this.actions[this.position]["toDos"][0],
+            true
+          );
+          break;
+        case commands.DELETE:
+          undoRedoOnDelete(
+            this.actions[this.position]["IDs"][0],
+            this.actions[this.position]["oldToDos"][0],
+            true
+          );
+          break;
+        case commands.DELETEINBULK:
+          undoRedoOnDeleteInBulk(
+            this.actions[this.position]["IDs"],
+            this.actions[this.position]["oldToDos"],
+            true
+          );
+          break;
+        default:
+          break;
+      }
+    },
+
+    undoRedoOnCreate: (id, toDo, isUndo) => {
+      if (isUndo) {
+        mockServer
+          .deleteToDoFromDatabase(id)
+          .then(() => {
+            localData.deleteToDoAtAnyIndex(
+              localData.getIndexInLocalDatabase(id),
+              1
+            );
+            // updateCountsForRemovedToDo(toDo);
+            // updateAnalytics();
+            // deleteDocumentElementUsingSelector(`[data-id="${id}"]`);
+            displayToDos();
+            this.position--;
+          })
+          .catch((e) => showSnackbar(e));
+      } else {
+        mockServer
+          .createToDoInDatabase(toDo)
+          .then(() => {
+            localData.pushNewToDo({ ...toDo });
+            // checkAndRenderOneToDo(data.allTodos[data.allTodos.length - 1]);
+            displayToDos();
+            this.position++;
+          })
+          .catch((e) => showSnackbar(e));
+      }
+    },
+
+    findIndexToInsert: (id) => {
+      let index = data.allTodos.length;
+      data.allTodos.forEach((toDo, i) => {
+        if (toDo.ID > id && i > 0 && data.allTodos[i - 1].ID < id) {
+          index = i;
+        }
+      });
+      if (data.allTodos.length === 0 || id < data.allTodos[0].ID) {
+        index = 0;
+      }
+      return index;
+    },
+
+    undoRedoOnDelete: (id, toDo, isUndo) => {
+      if (isUndo) {
+        mockServer
+          .createToDoInDatabase(toDo)
+          .then(() => {
+            const index = findIndexToInsert(id);
+            localData.insertToDoAtAnyIndex(index, toDo);
+            this.position--;
+            displayToDos();
+          })
+          .catch((e) => showSnackbar(e));
+      } else {
+        mockServer
+          .deleteToDoFromDatabase(id)
+          .then(() => {
+            localData.deleteToDoAtAnyIndex(
+              localData.getIndexInLocalDatabase(id)
+            );
+            this.position++;
+            displayToDos();
+          })
+          .catch((e) => showSnackbar(e));
+      }
+    },
+
+    undoRedoOnEdit: (id, toDo, oldToDo, isUndo) => {
+      let toDoCopy = {};
+      if (isUndo) {
+        toDoCopy = { ...oldToDo };
+      } else {
+        toDoCopy = { ...toDo };
+      }
+      mockServer
+        .updateToDoInDatabase(id, toDoCopy)
+        .then((returnedToDo) => {
+          copyContent(
+            localData.allTodos[localData.getIndexInLocalDatabase(id)],
+            returnedToDo
+          );
+          displayToDos();
+          if (isUndo) {
+            this.position--;
+          } else {
+            this.position++;
+          }
+        })
+        .catch((e) => showSnackbar(e));
+    },
+
+    undoRedoOnDeleteInBulk: (ids, deletedToDos, isUndo) => {
+      if (isUndo) {
+        mockServer
+          .bulkCreateInDatabase(deletedToDos)
+          .then(() => {
+            deletedToDos.forEach((toDo) =>
+              localData.insertToDoAtAnyIndex(findIndexToInsert(toDo.ID), {
+                ...toDo,
+              })
+            );
+            this.position--;
+            displayToDos();
+          })
+          .catch((e) => showSnackbar(e));
+      } else {
+        mockServer
+          .bulkDeleteFromDatabase(ids)
+          .then(() => {
+            ids.forEach((id) =>
+              localData.deleteToDoAtAnyIndex(
+                localData.getIndexInLocalDatabase(id)
+              )
+            );
+            this.position++;
+            displayToDos();
+          })
+          .catch((e) => showSnackbar(e));
+      }
+    },
+
+    undoRedoOnAlterCompletionInBulk: (ids, isUndo) => {
+      const indexs = [];
+      const toDos = [];
+      ids.forEach((id, i) => {
+        const index = localData.getIndexInLocalDatabase(id);
+        indexs.push(index);
+        toDos.push({ ...localData.allTodos[index] });
+        toDos[i].completed = !toDos[i].completed;
+      });
+      mockServer
+        .bulkUpdateInDatabase(ids, toDos)
+        .then(() => {
+          indexs.forEach((index) => localData.alterCompletedProperty(index));
+          displayToDos();
+          if (isUndo) {
+            this.position--;
+          } else {
+            this.position++;
+          }
+        })
+        .catch((e) => showSnackbar(e));
+    },
+  };
 };
 
 export const addActions = (commandType, toDoIDs, toDos, oldToDos) => {
-  history.actions = history.actions.slice(0, history.position + 1);
+  this.actions = this.actions.slice(0, this.position + 1);
   const newAction = {
     command: commandType,
     IDs: toDoIDs,
@@ -246,7 +287,6 @@ export const addActions = (commandType, toDoIDs, toDos, oldToDos) => {
   if (oldToDos) {
     newAction["oldToDos"] = oldToDos;
   }
-  history.actions.push(newAction);
-  history.position++;
-  // console.log(history.position, history.actions[history.position]);
+  this.actions.push(newAction);
+  this.position++;
 };

@@ -1,12 +1,11 @@
 export const commands = {
   EDIT: "edit",
-  ALTERCOMPLETIONINBULK: "alterCompletionInBulk",
+  ALTER_COMPLETION_IN_BULK: "alterCompletionInBulk",
   CREATE: "create",
   DELETE: "delete",
   SELECT: "select",
-  MARKCOMPLETED: "markCompleted",
-  ALTERCOMPLETIONINBULK: "alterCompletionInBulk",
-  DELETEINBULK: "deleteInBulk",
+  MARK_COMPLETED: "markCompleted",
+  DELETE_IN_BULK: "deleteInBulk",
 };
 
 export const categoryIcons = {

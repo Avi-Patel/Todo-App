@@ -33,27 +33,38 @@ export const queriedElements = {
   notCompletedCheckBox: document.querySelector("#notCompletedCheckBox"),
 };
 
-export const getToDo = (index) => data.allTodos[index];
-export const pushNewToDo = (toDo) => data.allTodos.push(toDo);
-export const deleteToDoAtAnyIndex = (index) => data.allTodos.splice(index, 1);
-export const insertToDoAtAnyIndex = (index, toDo) =>
-  data.allTodos.splice(index, 0, toDo);
-export const emptyAllTodosArray = () => (data.allTodos.length = 0);
-export const alterCompletedProperty = (index) =>
-  (data.allTodos[index].completed = !data.allTodos[index].completed);
-export const getIndexInLocalDatabase = (id) => {
-  let index = null;
-  data.allTodos.forEach((toDo, i) => {
-    if (toDo.ID === id) index = i;
-  });
-  return index;
-};
-export const emptyCurrentSelectedArray = () =>
-  (data.curOnScreenSelected.length = 0);
+export const createLocalDatabase = () => {
+  return {
+    allTodos: [],
+    curOnScreenSelected: [],
+    getToDo: (index) => data.allTodos[index],
 
-export const deleteIdFromCurrentSelected = (id) => {
-  const index = data.curOnScreenSelected.indexOf(id);
-  if (index !== -1) {
-    data.curOnScreenSelected.splice(index, 1);
-  }
+    pushNewToDo: (toDo) => data.allTodos.push(toDo),
+
+    deleteToDoAtAnyIndex: (index) => data.allTodos.splice(index, 1),
+
+    insertToDoAtAnyIndex: (index, toDo) => data.allTodos.splice(index, 0, toDo),
+
+    emptyAllTodosArray: () => (data.allTodos.length = 0),
+
+    alterCompletedProperty: (index) =>
+      (data.allTodos[index].completed = !data.allTodos[index].completed),
+
+    getIndexInLocalDatabase: (id) => {
+      let index = null;
+      data.allTodos.forEach((toDo, i) => {
+        if (toDo.ID === id) index = i;
+      });
+      return index;
+    },
+
+    emptyCurrentSelectedArray: () => (data.curOnScreenSelected.length = 0),
+
+    deleteIdFromCurrentSelected: (id) => {
+      const index = data.curOnScreenSelected.indexOf(id);
+      if (index !== -1) {
+        data.curOnScreenSelected.splice(index, 1);
+      }
+    },
+  };
 };

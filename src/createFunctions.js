@@ -67,7 +67,7 @@ export const createToDoNode = (toDoItem) => {
   return toDoNode;
 };
 
-export const createToDoObject = (title, urgency, category) => ({
+const createToDoObject = ({ title, urgency, category }) => ({
   ID: data.counter++,
   dateAsID: new Date().toLocaleString(),
   title: title,
@@ -76,30 +76,40 @@ export const createToDoObject = (title, urgency, category) => ({
   completed: false,
 });
 
-const createToDo = (title, urgency, category) => {
-  const toDoItem = createToDoObject(title, urgency, category);
-  createToDoInDatabase(toDoItem)
-    .then(() => {
-      pushNewToDo(toDoItem);
-      addActions(commands.CREATE, [toDoItem.ID], [{ ...toDoItem }]);
-      checkAndRenderOneToDo(toDoItem);
-      emptyInputTextBox("#TDTitle");
-    })
-    .catch((e) => {
-      data.counter--;
-      showSnackbar(e);
-    });
-};
-
-export const createAndAddTodo = () => {
-  const TDTitleInput = getDocumentElementUsingSelector("#TDTitle");
+export const createAndAddTodo = (mockServer, localData, historyActions) => {
+  const TDTitleInput = document.querySelector("#TDTitle");
   const title = TDTitleInput.value.trim();
-  const urgency = getDocumentElementUsingSelector("#urgencySelect")
-    .selectedIndex;
-  const category = getDocumentElementUsingSelector("#categorySelect")
-    .selectedIndex;
+  if (title === "") {
+    return;
+  }
+  const urgency = document.querySelector("#urgencySelect").selectedIndex;
+  const category = document.querySelector("#categorySelect").selectedIndex;
+
   TDTitleInput.focus();
-  createToDo(title, urgency, category);
+
+  createToDo({ title, urgency, category });
+
+  const createToDo = ({ title, urgency, category }) => {
+    const toDoItem = createToDoObject({ title, urgency, category });
+    mockServer
+      .createToDoInDatabase(toDoItem)
+      .then(() => {
+        localData.pushNewToDo(toDoItem);
+        historyActions.addActions(
+          commands.CREATE,
+          [toDoItem.ID],
+          [{ ...toDoItem }]
+        );
+        checkAndRenderOneToDo(toDoItem);
+        emptyInputTextBox("#TDTitle");
+      })
+      .catch((e) => {
+        data.counter--;
+        showSnackbar(e);
+      });
+  };
+  const emptyInputTextBox = (selectorValue) =>
+    (document.querySelector(selectorValue).value = "");
 };
 
 export const createModal = (title, urgencyIndex, categoryIndex) => {
