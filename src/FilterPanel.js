@@ -1,5 +1,10 @@
+import {
+  changeFilterBtnStyle,
+  extractClosestNodeFromPath,
+} from "./otherFunctions.js";
+
 class FilterPanel {
-  constructor(filterData, filterHandlers) {
+  constructor({ filterData, filterHandlers, urgency, category }) {
     this.props = {
       filterData,
       filterHandlers,
@@ -77,15 +82,15 @@ class FilterPanel {
     switch (targetButton.id) {
       case filterIds[0]:
         newFilterMask[0] ^= 1;
-        changeBtnStyle(targetButton, dataFilter[0]);
+        changeFilterBtnStyle(targetButton, dataFilter[0]);
         break;
       case filterIds[1]:
         newFilterMask[1] ^= 1;
-        changeBtnStyle(targetButton, dataFilter[1]);
+        changeFilterBtnStyle(targetButton, dataFilter[1]);
         break;
       case filterIds[2]:
         newFilterMask[2] ^= 1;
-        changeBtnStyle(targetButton, dataFilter[2]);
+        changeFilterBtnStyle(targetButton, dataFilter[2]);
         break;
       default:
         anyThingChanged = false;
@@ -97,16 +102,6 @@ class FilterPanel {
         this.props.filterData.categoryFilterMask = newFilterMask;
       }
       this.props.filterHandlers.setFilterData(this.props.filterData);
-    }
-  };
-  extractClosestNodeFromPath = (event, type) => event.target.closest(type);
-  changeBtnStyle = (target, selected) => {
-    if (selected) {
-      target.style.backgroundColor = "rgb(45, 45, 45)";
-      target.style.boxShadow = "0px 0px 4px 2px white";
-    } else {
-      target.style.backgroundColor = "black";
-      target.style.boxShadow = "";
     }
   };
 }

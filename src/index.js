@@ -1,11 +1,11 @@
-import { updateHeaderDate } from "/src/otherFunctions.js";
 import { createAndAddTodo } from "/src/createFunctions.js";
-import { displayToDos } from "/src/renderFunction.js";
 import { showSnackbar } from "/src/otherFunctions.js";
 import { createMockServer } from "/src/server.js";
 import { historyActions } from "./history";
-import { updateAnalytics } from "./analytics.js";
 import { todoActionHandlers } from "./operationsOnToDo.js";
+import { TodoRenderHandlers } from "./renderFunction.js";
+import { urgency, category } from "./consts.js";
+import { FilterPanel } from "./FilterPanel.js";
 
 class TodoAppState {
   constructor() {
@@ -20,8 +20,6 @@ class TodoAppState {
       updateAnalytics,
     };
 
-    this.filterPanel = new FilterPanel(this.filterData, this.setFilterData);
-
     this.mockServrer = createMockServer();
     this.localDataInAppState = createLocalDatabase();
     this.histroyActions = historyActions(
@@ -35,6 +33,18 @@ class TodoAppState {
       this.historyActions
     );
 
+    this.filterPanel = new FilterPanel({
+      filterData: this.filterData,
+      setFilterData: this.setFilterData,
+      urgency,
+      category,
+    });
+    this.todoRenderHandlers = new TodoRenderHandlers(
+      this.todoActionHandlers,
+      this.localDataInAppState,
+      this.filterData
+    );
+
     this.DOMElements = {
       todoAddBtn: document.querySelector("#TDaddBtn"),
       completeSelection: document.querySelector("#completeSelection"),
@@ -45,6 +55,7 @@ class TodoAppState {
     this.createToDoHandler = createAndAddTodo;
 
     this.updateHeaderDate();
+    this.addEventListeners();
   }
 
   updateHeaderDate = () =>
@@ -78,7 +89,7 @@ class TodoAppState {
     );
     this.DOMElements.completeSelection.addEventListener("click", () =>
       this.localDataInAppState.curOnScreenSelected.length !== 0
-        ? this.todoActionHandlers.updateAllToCompleted()
+        ? this.todoActionHandlers.completeAllSelectedTodos()
         : showSnackbar("No ToDos selected")
     );
 
@@ -169,35 +180,35 @@ export const extractClosestNodeFromPath = (event, type) =>
 //   updateFilter(event, data.categoryFilter, data.categoryFilterIds)
 // );
 
-queriedElements.completeSelection.addEventListener("click", () =>
-  data.curOnScreenSelected.length !== 0
-    ? updateAllToCompleted()
-    : showSnackbar("No ToDos selected")
-);
+// queriedElements.completeSelection.addEventListener("click", () =>
+//   data.curOnScreenSelected.length !== 0
+//     ? updateAllToCompleted()
+//     : showSnackbar("No ToDos selected")
+// );
 
-queriedElements.clearSelection.addEventListener("click", () =>
-  data.curOnScreenSelected.length !== 0
-    ? clearSelection()
-    : showSnackbar("No ToDos selected")
-);
-queriedElements.deleteSelection.addEventListener("click", () =>
-  data.curOnScreenSelected.length !== 0
-    ? deleteAllSelectedToDos()
-    : showSnackbar("No ToDos selected")
-);
+// queriedElements.clearSelection.addEventListener("click", () =>
+//   data.curOnScreenSelected.length !== 0
+//     ? clearSelection()
+//     : showSnackbar("No ToDos selected")
+// );
+// queriedElements.deleteSelection.addEventListener("click", () =>
+//   data.curOnScreenSelected.length !== 0
+//     ? deleteAllSelectedToDos()
+//     : showSnackbar("No ToDos selected")
+// );
 
-queriedElements.searchInput.addEventListener("input", (event) => {
-  clearTimeout(data.timeOutID);
-  data.timeOutID = setTimeout(() => displayToDos(), 500);
-});
-queriedElements.clearBtn.addEventListener("click", () => {
-  queriedElements.searchInput.value = "";
-  displayToDos();
-});
+// queriedElements.searchInput.addEventListener("input", (event) => {
+//   clearTimeout(data.timeOutID);
+//   data.timeOutID = setTimeout(() => displayToDos(), 500);
+// });
+// queriedElements.clearBtn.addEventListener("click", () => {
+//   queriedElements.searchInput.value = "";
+//   displayToDos();
+// });
 
-queriedElements.notCompletedCheckBox.addEventListener("change", () =>
-  displayToDos()
-);
+// queriedElements.notCompletedCheckBox.addEventListener("change", () =>
+//   displayToDos()
+// );
 
 window.addEventListener("click", (event) => {
   if (event.target.id === "updateModal") {
@@ -205,17 +216,17 @@ window.addEventListener("click", (event) => {
   }
 });
 
-window.addEventListener("keypress", (event) => {
-  if (event.ctrlKey && event.key === "z") {
-    console.log("undo event");
-    clearSelection();
-    undo();
-  } else if (event.ctrlKey && event.key === "r") {
-    console.log("redo event");
-    clearSelection();
-    redo();
-  }
-});
+// window.addEventListener("keypress", (event) => {
+//   if (event.ctrlKey && event.key === "z") {
+//     console.log("undo event");
+//     clearSelection();
+//     undo();
+//   } else if (event.ctrlKey && event.key === "r") {
+//     console.log("redo event");
+//     clearSelection();
+//     redo();
+//   }
+// });
 
 const setLocalData = (toDos) => {
   emptyAllTodosArray();

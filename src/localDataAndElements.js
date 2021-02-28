@@ -34,36 +34,38 @@ export const queriedElements = {
 };
 
 export const createLocalDatabase = () => {
+  const allTodos = [];
+  const curOnScreenSelected = [];
   return {
-    allTodos: [],
-    curOnScreenSelected: [],
-    getToDo: (index) => data.allTodos[index],
+    getToDo: (index) => allTodos[index],
 
-    pushNewToDo: (toDo) => data.allTodos.push(toDo),
+    pushNewToDo: (toDo) => allTodos.push(toDo),
 
-    deleteToDoAtAnyIndex: (index) => data.allTodos.splice(index, 1),
+    deleteToDoAtAnyIndex: (index) => allTodos.splice(index, 1),
 
-    insertToDoAtAnyIndex: (index, toDo) => data.allTodos.splice(index, 0, toDo),
+    insertToDoAtAnyIndex: (index, toDo) => allTodos.splice(index, 0, toDo),
 
-    emptyAllTodosArray: () => (data.allTodos.length = 0),
+    emptyAllTodosArray: () => (allTodos.length = 0),
+
+    replaceTodoAtAnyIndex: (index, todo) => (allTodos[index] = todo),
 
     alterCompletedProperty: (index) =>
-      (data.allTodos[index].completed = !data.allTodos[index].completed),
+      (allTodos[index].completed = !allTodos[index].completed),
 
     getIndexInLocalDatabase: (id) => {
-      let index = null;
-      data.allTodos.forEach((toDo, i) => {
+      let index;
+      allTodos.forEach((toDo, i) => {
         if (toDo.ID === id) index = i;
       });
       return index;
     },
 
-    emptyCurrentSelectedArray: () => (data.curOnScreenSelected.length = 0),
+    emptyCurrentSelectedArray: () => (curOnScreenSelected.length = 0),
 
     deleteIdFromCurrentSelected: (id) => {
-      const index = data.curOnScreenSelected.indexOf(id);
+      const index = curOnScreenSelected.indexOf(id);
       if (index !== -1) {
-        data.curOnScreenSelected.splice(index, 1);
+        curOnScreenSelected.splice(index, 1);
       }
     },
   };

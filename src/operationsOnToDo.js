@@ -1,11 +1,5 @@
-import { updateCountsForRemovedToDo, updateAnalytics } from "/src/analytics.js";
 import { createModal } from "/src/createFunctions.js";
-import { checkAndRenderOneToDo, displayToDos } from "/src/renderFunction.js";
-import { showSnackbar, copyContent } from "/src/otherFunctions.js";
-import {
-  getDocumentElementUsingSelector,
-  changeBtnStyleForSelection,
-} from "/src/index.js";
+import { showSnackbar } from "/src/otherFunctions.js";
 import { commands } from "/src/consts.js";
 
 export const todoActionHandlers = (mockServer, localData, history) => {
@@ -45,25 +39,26 @@ export const todoActionHandlers = (mockServer, localData, history) => {
       mockServer
         .updateToDoInDatabase(updatedToDo.ID, updatedToDo)
         .then((returnedToDo) => {
+          const index = localData.getIndexInLocalDatabase(id);
           addActions(
             commands.EDIT,
             [toDo.ID],
             [{ ...returnedToDo }],
             [{ ...toDo }]
           );
-          updateCountsForRemovedToDo(toDo);
-          copyContent(toDo, returnedToDo);
-          checkAndRenderOneToDo(toDo);
+          // updateCountsForRemovedToDo(toDo);
+          localData.replaceTodoAtAnyIndex(index, { ...returnedToDo });
+          checkAndRenderOneToDo(returnedToDo);
         })
         .catch((e) => showSnackbar(e));
     },
 
     alterCompletionOfToDo: (id) => {
-      deleteIdFromCurrentSelected(id);
+      localData.deleteIdFromCurrentSelected(id);
       const index = localData.getIndexInLocalDatabase(id);
       const updatedToDo = { ...localData.getToDo(index) };
       updatedToDo.completed = !updatedToDo.completed;
-      updateToDo(getToDo(index), updatedToDo);
+      this.updateToDo(getToDo(index), updatedToDo);
     },
 
     addListenerToModalUpdateBtn: (btnID, toDo, updateModal) => {
@@ -82,7 +77,7 @@ export const todoActionHandlers = (mockServer, localData, history) => {
             "#updatedCategory"
           ).selectedIndex;
 
-          updateToDo(toDo, updatedToDo);
+          this.updateToDo(toDo, updatedToDo);
           updateModal.remove();
         }
       });
@@ -102,13 +97,13 @@ export const todoActionHandlers = (mockServer, localData, history) => {
         toDo.category;
       document.body.appendChild(updateModal);
 
-      addListenerToModalUpdateBtn("updateToDoBtn", toDo, updateModal);
-      addListenerToModalCancelBtn("cancelUpdateBtn", updateModal);
+      this.addListenerToModalUpdateBtn("updateToDoBtn", toDo, updateModal);
+      this.addListenerToModalCancelBtn("cancelUpdateBtn", updateModal);
     },
 
     clearSelection: () => {
       localData.curOnScreenSelected.forEach((id) => {
-        const selectCircle = getDocumentElementUsingSelector(
+        const selectCircle = document.querySelector(
           `[data-id="${id}"] [data-type=${commands.SELECT}]`
         );
         changeBtnStyleForSelection(selectCircle, false);
@@ -137,7 +132,7 @@ export const todoActionHandlers = (mockServer, localData, history) => {
       });
     },
 
-    updateAllToCompleted: () => {
+    completeAllSelectedTodos: () => {
       const toDosforUpdation = [];
       const indexsForUpdation = [];
       localData.curOnScreenSelected = filterCurSelectedToDoArray(
@@ -168,7 +163,7 @@ export const todoActionHandlers = (mockServer, localData, history) => {
         .bulkDeleteFromDatabase(data.curOnScreenSelected)
         .then(() => {
           const deletedToDos = [];
-          data.curOnScreenSelected.forEach((id) => {
+          localData.curOnScreenSelected.forEach((id) => {
             deletedToDos.push({
               ...localData.getToDo(localData.getIndexInLocalDatabase(id)),
             });

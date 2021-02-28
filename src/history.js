@@ -21,11 +21,11 @@ import { commands } from "/src/consts.js";
 // };
 
 export const historyActions = (mockServer, localData) => {
+  let position = -1;
+  const actions = [];
   return {
-    position: -1,
-    actions: [],
     addActions: (commandType, toDoIDs, toDos, oldToDos) => {
-      this.actions = this.actions.slice(0, this.position + 1);
+      actions = actions.slice(0, position + 1);
       const newAction = {
         command: commandType,
         IDs: toDoIDs,
@@ -36,46 +36,43 @@ export const historyActions = (mockServer, localData) => {
       if (oldToDos) {
         newAction["oldToDos"] = oldToDos;
       }
-      this.actions.push(newAction);
-      this.position++;
+      actions.push(newAction);
+      position++;
     },
 
     redo: () => {
-      if (this.position === this.actions.length - 1) return;
-      console.log(this.position);
-      switch (this.actions[this.position + 1].command) {
+      if (position === actions.length - 1) return;
+      console.log(position);
+      switch (actions[position + 1].command) {
         case commands.EDIT:
           undoRedoOnEdit(
-            this.actions[this.position + 1]["IDs"][0],
-            this.actions[this.position + 1]["toDos"][0],
-            this.actions[this.position + 1]["oldToDos"][0],
+            actions[position + 1]["IDs"][0],
+            actions[position + 1]["toDos"][0],
+            actions[position + 1]["oldToDos"][0],
             false
           );
           break;
         case commands.ALTERCOMPLETIONINBULK:
-          undoRedoOnAlterCompletionInBulk(
-            this.actions[this.position + 1]["IDs"],
-            false
-          );
+          undoRedoOnAlterCompletionInBulk(actions[position + 1]["IDs"], false);
           break;
         case commands.CREATE:
           undoRedoOnCreate(
-            this.actions[this.position + 1]["IDs"][0],
-            this.actions[this.position + 1]["toDos"][0],
+            actions[position + 1]["IDs"][0],
+            actions[position + 1]["toDos"][0],
             false
           );
           break;
         case commands.DELETE:
           undoRedoOnDelete(
-            this.actions[this.position + 1]["IDs"][0],
-            this.actions[this.position + 1]["oldToDos"][0],
+            actions[position + 1]["IDs"][0],
+            actions[position + 1]["oldToDos"][0],
             false
           );
           break;
         case commands.DELETEINBULK:
           undoRedoOnDeleteInBulk(
-            this.actions[this.position + 1]["IDs"],
-            this.actions[this.position + 1]["oldToDos"],
+            actions[position + 1]["IDs"],
+            actions[position + 1]["oldToDos"],
             false
           );
           break;
@@ -85,42 +82,39 @@ export const historyActions = (mockServer, localData) => {
     },
 
     undo: () => {
-      if (this.position === -1) return;
-      console.log(this.position);
+      if (position === -1) return;
+      console.log(position);
 
-      switch (this.actions[this.position].command) {
+      switch (actions[position].command) {
         case commands.EDIT:
           undoRedoOnEdit(
-            this.actions[this.position]["IDs"][0],
-            this.actions[this.position]["toDos"][0],
-            this.actions[this.position]["oldToDos"][0],
+            actions[position]["IDs"][0],
+            actions[position]["toDos"][0],
+            actions[position]["oldToDos"][0],
             true
           );
           break;
         case commands.ALTERCOMPLETIONINBULK:
-          undoRedoOnAlterCompletionInBulk(
-            this.actions[this.position]["IDs"],
-            true
-          );
+          undoRedoOnAlterCompletionInBulk(actions[position]["IDs"], true);
           break;
         case commands.CREATE:
           undoRedoOnCreate(
-            this.actions[this.position]["IDs"][0],
-            this.actions[this.position]["toDos"][0],
+            actions[position]["IDs"][0],
+            actions[position]["toDos"][0],
             true
           );
           break;
         case commands.DELETE:
           undoRedoOnDelete(
-            this.actions[this.position]["IDs"][0],
-            this.actions[this.position]["oldToDos"][0],
+            actions[position]["IDs"][0],
+            actions[position]["oldToDos"][0],
             true
           );
           break;
         case commands.DELETEINBULK:
           undoRedoOnDeleteInBulk(
-            this.actions[this.position]["IDs"],
-            this.actions[this.position]["oldToDos"],
+            actions[position]["IDs"],
+            actions[position]["oldToDos"],
             true
           );
           break;
@@ -142,7 +136,7 @@ export const historyActions = (mockServer, localData) => {
             // updateAnalytics();
             // deleteDocumentElementUsingSelector(`[data-id="${id}"]`);
             displayToDos();
-            this.position--;
+            position--;
           })
           .catch((e) => showSnackbar(e));
       } else {
@@ -152,7 +146,7 @@ export const historyActions = (mockServer, localData) => {
             localData.pushNewToDo({ ...toDo });
             // checkAndRenderOneToDo(data.allTodos[data.allTodos.length - 1]);
             displayToDos();
-            this.position++;
+            position++;
           })
           .catch((e) => showSnackbar(e));
       }
@@ -178,7 +172,7 @@ export const historyActions = (mockServer, localData) => {
           .then(() => {
             const index = findIndexToInsert(id);
             localData.insertToDoAtAnyIndex(index, toDo);
-            this.position--;
+            position--;
             displayToDos();
           })
           .catch((e) => showSnackbar(e));
@@ -189,7 +183,7 @@ export const historyActions = (mockServer, localData) => {
             localData.deleteToDoAtAnyIndex(
               localData.getIndexInLocalDatabase(id)
             );
-            this.position++;
+            position++;
             displayToDos();
           })
           .catch((e) => showSnackbar(e));
@@ -212,9 +206,9 @@ export const historyActions = (mockServer, localData) => {
           );
           displayToDos();
           if (isUndo) {
-            this.position--;
+            position--;
           } else {
-            this.position++;
+            position++;
           }
         })
         .catch((e) => showSnackbar(e));
@@ -230,7 +224,7 @@ export const historyActions = (mockServer, localData) => {
                 ...toDo,
               })
             );
-            this.position--;
+            position--;
             displayToDos();
           })
           .catch((e) => showSnackbar(e));
@@ -243,7 +237,7 @@ export const historyActions = (mockServer, localData) => {
                 localData.getIndexInLocalDatabase(id)
               )
             );
-            this.position++;
+            position++;
             displayToDos();
           })
           .catch((e) => showSnackbar(e));
@@ -265,9 +259,9 @@ export const historyActions = (mockServer, localData) => {
           indexs.forEach((index) => localData.alterCompletedProperty(index));
           displayToDos();
           if (isUndo) {
-            this.position--;
+            position--;
           } else {
-            this.position++;
+            position++;
           }
         })
         .catch((e) => showSnackbar(e));
@@ -276,7 +270,7 @@ export const historyActions = (mockServer, localData) => {
 };
 
 export const addActions = (commandType, toDoIDs, toDos, oldToDos) => {
-  this.actions = this.actions.slice(0, this.position + 1);
+  actions = actions.slice(0, position + 1);
   const newAction = {
     command: commandType,
     IDs: toDoIDs,
@@ -287,6 +281,6 @@ export const addActions = (commandType, toDoIDs, toDos, oldToDos) => {
   if (oldToDos) {
     newAction["oldToDos"] = oldToDos;
   }
-  this.actions.push(newAction);
-  this.position++;
+  actions.push(newAction);
+  position++;
 };
