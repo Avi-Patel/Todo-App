@@ -1,4 +1,4 @@
-import { commands } from "/src/consts.js";
+import { commands, color, categoryIcon } from "/src/consts.js";
 
 class filterCheckerOnTodo {
   constructor(filterData) {
@@ -53,49 +53,53 @@ class Analytics {
   getNumberOfTotalTodos = () => this.numberOfTotalTodos;
 }
 
-class AnalyticsUpdaer {
+class AnalyticsUpdater {
   constructor() {
     this.DOMElements = {
       percentageText: document.querySelector("#percentageText"),
       ratioText: document.querySelector("#ratioText"),
     };
-
     this.analytics = new Analytics();
-
-    updateCountsForRemovedTodo = (toDo) => {
-      if (toDo.completed) {
-        this.analytics.incrementNumberOfCompletedTodos(-1);
-        // this.analyticsData.numberOfCompletedTodos--;
-      }
-      this.analytics.incrementNumberOfTotalTodos(-1);
-      // this.analyticsData.numberOfTotalTodos--;
-    };
-    updateCountsForAddedTodo = (toDo) => {
-      if (toDo.completed) {
-        this.analytics.incrementNumberOfCompletedTodos(1);
-        // this.analyticsData.numberOfCompletedTodos--;
-      }
-      this.analytics.incrementNumberOfTotalTodos(1);
-      // this.analyticsData.numberOfTotalTodos--;
-    };
-
-    updateAnalyticsOnView = () => {
-      this.DOMElements.percentageText.textContent =
-        this.analytics.getNumberOfCompletedTodos() === 0
-          ? "0 %"
-          : Math.round(
-              (this.analytics.getNumberOfCompletedTodos() /
-                this.analytics.getNumberOfTotalTodos()) *
-                100
-            ) + " %";
-      this.DOMElements.ratioText.textContent = `${this.analytics.getNumberOfCompletedTodos()} / ${this.analytics.getNumberOfTotalTodos()}`;
-    };
   }
+  updateCountsForRemovedTodo = (toDo) => {
+    if (toDo.completed) {
+      this.analytics.incrementNumberOfCompletedTodos(-1);
+      // this.analyticsData.numberOfCompletedTodos--;
+    }
+    this.analytics.incrementNumberOfTotalTodos(-1);
+    // this.analyticsData.numberOfTotalTodos--;
+  };
+  updateCountsForAddedTodo = (toDo) => {
+    if (toDo.completed) {
+      this.analytics.incrementNumberOfCompletedTodos(1);
+      // this.analyticsData.numberOfCompletedTodos--;
+    }
+    this.analytics.incrementNumberOfTotalTodos(1);
+    // this.analyticsData.numberOfTotalTodos--;
+  };
+
+  updateAnalyticsOnView = () => {
+    this.DOMElements.percentageText.textContent =
+      this.analytics.getNumberOfCompletedTodos() === 0
+        ? "0 %"
+        : Math.round(
+            (this.analytics.getNumberOfCompletedTodos() /
+              this.analytics.getNumberOfTotalTodos()) *
+              100
+          ) + " %";
+    this.DOMElements.ratioText.textContent = `${this.analytics.getNumberOfCompletedTodos()} / ${this.analytics.getNumberOfTotalTodos()}`;
+  };
 }
 
-extractClosestNodeFromPath = (event, type) => event.target.closest(type);
+const extractClosestNodeFromPath = (event, type) => event.target.closest(type);
 
-createToDoNode = (todo, todoActionHandlers) => {
+const createToDoNode = (todo, localData, todoActionHandlers) => {
+  const urgencyIconColors = [color.GREEN, color.YELLOW, color.RED];
+  const categoryIcons = [
+    categoryIcon.USERALT,
+    categoryIcon.BOOKOPEN,
+    categoryIcon.USERS,
+  ];
   const toDoNode = document.createElement("div");
   toDoNode.classList.add(
     "TDitem",
@@ -117,11 +121,11 @@ createToDoNode = (todo, todoActionHandlers) => {
       ${todo.dateAsID}
     </div>
     <div class="TDprefrerences mar10">
-    <span class="TDicon mar8 ${this.urgencyIconColors[todo.urgency]}">
+    <span class="TDicon mar8 ${urgencyIconColors[todo.urgency]}">
       <i class="fa fa-exclamation-triangle "></i>
     </span>
     <span class="TDicon mar8 cwhite">
-      <i class="fa ${this.categoryIcons[todo.category]}"></i>
+      <i class="fa ${categoryIcons[todo.category]}"></i>
     </span>
       
     </div>
@@ -129,12 +133,14 @@ createToDoNode = (todo, todoActionHandlers) => {
     ${todo.completed ? "Completed Undo?" : "Mark Completed"}
     </button>
     <button class="selectWhiteCircle mar8" data-type="select"></button>`;
-  this.addListenerForToDoNode(toDoNode, todoActionHandlers);
+  addListenerForToDoNode(toDoNode, localData, todoActionHandlers);
   return toDoNode;
 };
 
-addListenerForToDoNode = (newToDoNode, todoActionHandlers) => {
+const addListenerForToDoNode = (newToDoNode, localData, todoActionHandlers) => {
   newToDoNode.addEventListener("click", (event) => {
+    console.log("event called");
+    console.log(todoActionHandlers);
     const targetButton =
       event.target.tagName === "BUTTON"
         ? event.target
@@ -143,6 +149,7 @@ addListenerForToDoNode = (newToDoNode, todoActionHandlers) => {
     if (!targetButton) return;
 
     const id = parseInt(newToDoNode.dataset.id);
+    console.log(targetButton.dataset.type);
     switch (targetButton.dataset.type) {
       case commands.MARKCOMPLETED:
         todoActionHandlers.alterCompletionOfToDo(id);
@@ -152,11 +159,11 @@ addListenerForToDoNode = (newToDoNode, todoActionHandlers) => {
         break;
       case commands.DELETE:
         todoActionHandlers.deleteToDo(id);
-        this.props.localData.emptyCurrentSelectedArray();
+        localData.emptyCurrentSelectedArray();
         break;
       case commands.EDIT:
         todoActionHandlers.editToDo(id);
-        this.props.localData.emptyCurrentSelectedArray();
+        localData.emptyCurrentSelectedArray();
         break;
       default:
         break;
@@ -167,7 +174,14 @@ addListenerForToDoNode = (newToDoNode, todoActionHandlers) => {
 // should i move this createToDoNode to anothor class?
 
 export class TodoRenderHandlers {
-  constructor(todoActionHandlers, localData, filterData) {
+  constructor({
+    todoActionHandlers,
+    localData,
+    filterData,
+    color,
+    categoryIcon,
+  }) {
+    console.log(filterData);
     this.props = {
       todoActionHandlers,
       localData,
@@ -176,57 +190,32 @@ export class TodoRenderHandlers {
 
     this.urgencyIconColors = [color.GREEN, color.YELLOW, color.RED];
     this.categoryIcons = [
-      categoryIcons.USERALT,
-      categoryIcons.BOOKOPEN,
-      categoryIcons.USERS,
+      categoryIcon.USERALT,
+      categoryIcon.BOOKOPEN,
+      categoryIcon.USERS,
     ];
     this.filterCheckerOnTodo = new filterCheckerOnTodo(filterData);
-    this.analyticsUpdaer = new AnalyticsUpdaer();
+    this.analyticsUpdaer = new AnalyticsUpdater();
 
     this.DOMElements = {
       todosBox: document.querySelector("#todosBox"),
     };
   }
 
-  checkAndRenderOneToDo = (toDoItem) => {
-    const oldToDoNode = document.querySelector(`[data-id="${toDoItem.ID}"]`);
-    const indexInLocalData = this.props.localData.getIndexInLocalDatabase(
-      toDoItem.ID
+  setAnalytics = (numberOfCompletedTodos, numberOfTotalTodos) => {
+    this.analyticsUpdaer.analytics.setNumberOfCompletedTodos(
+      numberOfCompletedTodos
     );
-    if (indexInLocalData) {
-      this.analyticsUpdaer.updateCountsForRemovedToDo(
-        this.props.localData.getToDo(indexInLocalData)
-      );
-    }
-    const conditionSatisfied =
-      this.filterCheckerOnTodo.checkWithFilter(toDoItem) &&
-      this.filterCheckerOnTodo.containSearchedWord(toDoItem.title);
-
-    if (conditionSatisfied) {
-      console.log("Satisfied");
-
-      const newtoDoNode = new TodoNode(toDoItem, this.props.todoActionHandlers);
-      if (oldToDoNode) {
-        this.analyticsUpdaer.updateCountsForRemovedTodo(toDoItem);
-        this.DOMElements.todosBox.replaceChild(newtoDoNode, oldToDoNode);
-      } else {
-        this.DOMElements.todosBox.appendChild(newtoDoNode);
-      }
-    } else if (oldToDoNode) {
-      oldToDoNode.remove();
-    }
-
-    this.analyticsUpdaer.updateCountsForAddedTodo(toDoItem);
-    this.analyticsUpdaer.updateAnalytics();
+    this.analyticsUpdaer.analytics.setNumberOfTotalTodos(numberOfTotalTodos);
   };
 
   displayToDos = () => {
+    console.log("display called");
+    console.log(this.props.filterData);
     let numberOfCompletedTodos = 0,
       numberOfTotalTodos = 0;
 
-    this.DOMElements.todosBox
-      .querySelectorAll("*")
-      .forEach((node) => node.remove());
+    this.DOMElements.todosBox.innerHTML = "";
 
     this.props.localData.allTodos.forEach((toDoItem) => {
       const conditionSatisfied =
@@ -238,19 +227,17 @@ export class TodoRenderHandlers {
         if (toDoItem.completed) {
           numberOfCompletedTodos++;
         }
-        const newtoDoNode = new TodoNode(
+        const newtoDoNode = createToDoNode(
           toDoItem,
+          this.props.localData,
           this.props.todoActionHandlers
         );
         this.DOMElements.todosBox.appendChild(newtoDoNode);
       }
     });
     this.props.localData.curOnScreenSelected.length = 0;
-    this.analyticsUpdaer.analytics.setNumberOfCompletedTodos(
-      numberOfCompletedTodos
-    );
-    this.analyticsUpdaer.analytics.setNumberOfTotalTodos(numberOfTotalTodos);
-    this.analyticsUpdaer.updateAnalytics();
+    this.setAnalytics(numberOfCompletedTodos, numberOfTotalTodos);
+    this.analyticsUpdaer.updateAnalyticsOnView();
   };
 }
 
@@ -338,4 +325,36 @@ export class TodoRenderHandlers {
 //   data.numberOfCompletedTodos = numberOfCompletedTodos;
 //   data.numberOfTotalTodos = numberOfTotalTodos;
 //   updateAnalytics();
+// };
+
+// checkAndRenderOneToDo = (toDoItem) => {
+//   const oldToDoNode = document.querySelector(`[data-id="${toDoItem.ID}"]`);
+//   const indexInLocalData = this.props.localData.getIndexInLocalDatabase(
+//     toDoItem.ID
+//   );
+//   if (indexInLocalData) {
+//     this.analyticsUpdaer.updateCountsForRemovedToDo(
+//       this.props.localData.getToDo(indexInLocalData)
+//     );
+//   }
+//   const conditionSatisfied =
+//     this.filterCheckerOnTodo.checkWithFilter(toDoItem) &&
+//     this.filterCheckerOnTodo.containSearchedWord(toDoItem.title);
+
+//   if (conditionSatisfied) {
+//     console.log("Satisfied");
+
+//     const newtoDoNode = new TodoNode(toDoItem, this.props.todoActionHandlers);
+//     if (oldToDoNode) {
+//       this.analyticsUpdaer.updateCountsForRemovedTodo(toDoItem);
+//       this.DOMElements.todosBox.replaceChild(newtoDoNode, oldToDoNode);
+//     } else {
+//       this.DOMElements.todosBox.appendChild(newtoDoNode);
+//     }
+//   } else if (oldToDoNode) {
+//     oldToDoNode.remove();
+//   }
+
+//   this.analyticsUpdaer.updateCountsForAddedTodo(toDoItem);
+//   this.analyticsUpdaer.updateAnalytics();
 // };

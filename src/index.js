@@ -1,113 +1,123 @@
-import { createAndAddTodo } from "/src/createFunctions.js";
-import { showSnackbar } from "/src/otherFunctions.js";
-import { createMockServer } from "/src/server.js";
-import { historyActions } from "./history";
-import { todoActionHandlers } from "./operationsOnToDo.js";
-import { TodoRenderHandlers } from "./renderFunction.js";
-import { urgency, category } from "./consts.js";
-import { FilterPanel } from "./FilterPanel.js";
+import { TodoAppState } from "./AppState.js";
 
-class TodoAppState {
-  constructor() {
-    this.filterData = {
-      urgencyFilterMask: [0, 0, 0],
-      categoryFilterMask: [0, 0, 0],
-      notCompletedCheckBox: false,
-      searchedText: "",
-    };
+const AppState = new TodoAppState();
 
-    this.analyticsHandlers = {
-      updateAnalytics,
-    };
+// import { createAndAddTodo } from "/src/createFunctions.js";
+// import { showSnackbar } from "/src/otherFunctions.js";
+// import { createMockServer } from "/src/server.js";
+// import { historyActions } from "./history";
+// import { todoActionHandlers } from "./operationsOnToDo.js";
+// import { TodoRenderHandlers } from "./renderFunction.js";
+// import { urgency, category } from "./consts.js";
+// import { FilterPanel } from "./FilterPanel.js";
 
-    this.mockServrer = createMockServer();
-    this.localDataInAppState = createLocalDatabase();
-    this.histroyActions = historyActions(
-      this.mockServrer,
-      this.localDataInAppState
-    );
+// class TodoAppState {
+//   constructor() {
+//     this.filterData = {
+//       urgencyFilterMask: [0, 0, 0],
+//       categoryFilterMask: [0, 0, 0],
+//       notCompletedCheckBox: false,
+//       searchedText: "",
+//     };
 
-    this.todoActionHandlers = todoActionHandlers(
-      this.mockServrer,
-      this.localDataInAppState,
-      this.historyActions
-    );
+//     this.analyticsHandlers = {
+//       updateAnalytics,
+//     };
 
-    this.filterPanel = new FilterPanel({
-      filterData: this.filterData,
-      setFilterData: this.setFilterData,
-      urgency,
-      category,
-    });
-    this.todoRenderHandlers = new TodoRenderHandlers(
-      this.todoActionHandlers,
-      this.localDataInAppState,
-      this.filterData
-    );
+//     this.mockServrer = createMockServer();
+//     this.localDataInAppState = new createLocalDatabase();
+//     this.histroyActions = historyActions(
+//       this.mockServrer,
+//       this.localDataInAppState
+//     );
 
-    this.DOMElements = {
-      todoAddBtn: document.querySelector("#TDaddBtn"),
-      completeSelection: document.querySelector("#completeSelection"),
-      clearSelection: document.querySelector("#clearSelection"),
-      deleteSelection: document.querySelector("#deleteSelection"),
-    };
+//     this.todoActionHandlers = todoActionHandlers({
+//       mockServrer: this.mockServrer,
+//       localDataInAppState: this.localDataInAppState,
+//       historyActions: this.historyActions,
+//       render: this.render,
+//     });
 
-    this.createToDoHandler = createAndAddTodo;
+//     this.filterPanel = new FilterPanel({
+//       filterData: this.filterData,
+//       setFilterData: this.setFilterData,
+//       urgency,
+//       category,
+//     });
+//     this.todoRenderHandlers = new TodoRenderHandlers({
+//       todoActionHandlers: this.todoActionHandlers,
+//       localDataInAppState: this.localDataInAppState,
+//       filterData: this.filterData,
+//     });
 
-    this.updateHeaderDate();
-    this.addEventListeners();
-  }
+//     this.DOMElements = {
+//       todoAddBtn: document.querySelector("#TDaddBtn"),
+//       completeSelection: document.querySelector("#completeSelection"),
+//       clearSelection: document.querySelector("#clearSelection"),
+//       deleteSelection: document.querySelector("#deleteSelection"),
+//     };
 
-  updateHeaderDate = () =>
-    (document.querySelector(
-      "#headerDate"
-    ).textContent = `${new Date().toDateString()}`);
+//     this.createToDoHandler = createAndAddTodo;
 
-  setFilterData = (newFilterData) => {
-    this.filterData = newFilterData;
-    displayToDos();
-  };
+//     this.updateHeaderDate();
+//     this.addEventListeners();
+//   }
 
-  addEventListeners = () => {
-    window.addEventListener("keypress", (event) => {
-      if (event.ctrlKey && event.key === "z") {
-        console.log("undo event");
-        clearSelection();
-        this.histroyActions.undo();
-      } else if (event.ctrlKey && event.key === "r") {
-        console.log("redo event");
-        clearSelection();
-        this.histroyActions.redo();
-      }
-    });
-    this.DOMElements.todoAddBtn.addEventListener("click", () =>
-      this.createToDoHandler(
-        this.mockServrer,
-        this.localDataInAppState,
-        this.histroyActions
-      )
-    );
-    this.DOMElements.completeSelection.addEventListener("click", () =>
-      this.localDataInAppState.curOnScreenSelected.length !== 0
-        ? this.todoActionHandlers.completeAllSelectedTodos()
-        : showSnackbar("No ToDos selected")
-    );
+//   render = () => {
+//     this.todoRenderHandlers.displayToDos();
+//   };
 
-    this.DOMElements.clearSelection.addEventListener("click", () =>
-      this.localDataInAppState.curOnScreenSelected.length !== 0
-        ? this.todoActionHandlers.clearSelection()
-        : showSnackbar("No ToDos selected")
-    );
-    this.DOMElements.deleteSelection.addEventListener("click", () =>
-      this.localDataInAppState.curOnScreenSelected.length !== 0
-        ? this.todoActionHandlers.deleteAllSelectedToDos()
-        : showSnackbar("No ToDos selected")
-    );
-  };
-}
+//   updateHeaderDate = () =>
+//     (document.querySelector(
+//       "#headerDate"
+//     ).textContent = `${new Date().toDateString()}`);
 
-export const extractClosestNodeFromPath = (event, type) =>
-  event.target.closest(type);
+//   setFilterData = (newFilterData) => {
+//     this.filterData = newFilterData;
+//     this.render();
+//   };
+
+//   addEventListeners = () => {
+//     window.addEventListener("keypress", (event) => {
+//       if (event.ctrlKey && event.key === "z") {
+//         console.log("undo event");
+//         this.todoActionHandlers.clearSelection();
+//         this.histroyActions.undo();
+//       } else if (event.ctrlKey && event.key === "r") {
+//         console.log("redo event");
+//         this.todoActionHandlers.clearSelection();
+//         this.histroyActions.redo();
+//       }
+//     });
+//     this.DOMElements.todoAddBtn.addEventListener("click", () =>
+//       this.createToDoHandler({
+//         mockServer: this.mockServrer,
+//         localDataInAppState: this.localDataInAppState,
+//         historyActions: this.histroyActions,
+//         render: this.render,
+//       })
+//     );
+//     this.DOMElements.completeSelection.addEventListener("click", () =>
+//       this.localDataInAppState.curOnScreenSelected.length !== 0
+//         ? this.todoActionHandlers.completeAllSelectedTodos()
+//         : showSnackbar("No ToDos selected")
+//     );
+
+//     this.DOMElements.clearSelection.addEventListener("click", () =>
+//       this.localDataInAppState.curOnScreenSelected.length !== 0
+//         ? this.todoActionHandlers.clearSelection()
+//         : showSnackbar("No ToDos selected")
+//     );
+//     this.DOMElements.deleteSelection.addEventListener("click", () =>
+//       this.localDataInAppState.curOnScreenSelected.length !== 0
+//         ? this.todoActionHandlers.deleteAllSelectedToDos()
+//         : showSnackbar("No ToDos selected")
+//     );
+//   };
+// }
+
+// export const extractClosestNodeFromPath = (event, type) =>
+//   event.target.closest(type);
 
 // export const getDocumentElementUsingSelector = (selectorString) =>
 //   document.querySelector(selectorString);
@@ -210,11 +220,11 @@ export const extractClosestNodeFromPath = (event, type) =>
 //   displayToDos()
 // );
 
-window.addEventListener("click", (event) => {
-  if (event.target.id === "updateModal") {
-    event.target.remove();
-  }
-});
+// window.addEventListener("click", (event) => {
+//   if (event.target.id === "updateModal") {
+//     event.target.remove();
+//   }
+// });
 
 // window.addEventListener("keypress", (event) => {
 //   if (event.ctrlKey && event.key === "z") {
@@ -228,27 +238,27 @@ window.addEventListener("click", (event) => {
 //   }
 // });
 
-const setLocalData = (toDos) => {
-  emptyAllTodosArray();
-  toDos.forEach((toDo) => {
-    pushNewToDo({ ...toDo });
-    data.counter = Math.max(toDo.ID + 1, data.counter);
-  });
-  displayToDos();
-};
+// const setLocalData = (toDos) => {
+//   emptyAllTodosArray();
+//   toDos.forEach((toDo) => {
+//     pushNewToDo({ ...toDo });
+//     data.counter = Math.max(toDo.ID + 1, data.counter);
+//   });
+//   displayToDos();
+// };
 
-document.addEventListener("DOMContentLoaded", () => {
-  console.log("loading data");
-  getToDosFromDatabase()
-    .then((toDos) => {
-      if (toDos.length > 0) {
-        setLocalData(toDos);
-      }
-    })
-    .catch((e) => showSnackbar(e));
-});
+// document.addEventListener("DOMContentLoaded", () => {
+//   console.log("loading data");
+//   getToDosFromDatabase()
+//     .then((toDos) => {
+//       if (toDos.length > 0) {
+//         setLocalData(toDos);
+//       }
+//     })
+//     .catch((e) => showSnackbar(e));
+// });
 
-window.addEventListener("beforeunload", () => {
-  console.log("Saving data");
-  saveToDos().catch((e) => showSnackbar(e));
-});
+// window.addEventListener("beforeunload", () => {
+//   console.log("Saving data");
+//   saveToDos().catch((e) => showSnackbar(e));
+// });

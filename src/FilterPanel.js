@@ -3,12 +3,15 @@ import {
   extractClosestNodeFromPath,
 } from "./otherFunctions.js";
 
-class FilterPanel {
-  constructor({ filterData, filterHandlers, urgency, category }) {
-    this.props = {
-      filterData,
-      filterHandlers,
+export class FilterPanel {
+  constructor({ filterHandlers, urgency, category }) {
+    this.filterData = {
+      urgencyFilterMask: [0, 0, 0],
+      categoryFilterMask: [0, 0, 0],
+      notCompletedCheckBox: false,
+      searchedText: "",
     };
+    this.filterHandlers = filterHandlers;
 
     this.DOMElements = {
       urgencyFilter: document.querySelector("#urgencyFilter"),
@@ -29,16 +32,16 @@ class FilterPanel {
 
   setFilterPanelEventHandlers = () => {
     this.DOMElements.urgencyFilter.addEventListener("click", (event) =>
-      updateFilter(
+      this.updateFilter(
         event,
-        this.props.filterData.urgencyFilterMask,
+        this.filterData.urgencyFilterMask,
         this.urgencyFilterIds
       )
     );
     this.DOMElements.categoryFilter.addEventListener("click", (event) =>
-      updateFilter(
+      this.updateFilter(
         event,
-        this.props.filterData.categoryFilterMask,
+        this.filterData.categoryFilterMask,
         this.categoryFilterIds
       )
     );
@@ -59,18 +62,16 @@ class FilterPanel {
   };
 
   updateSearchedText = (searchedText) => {
-    this.props.filterData.searchedText = searchedText;
-    this.props.filterHandlers.setFilterData(this.props.filterData);
+    this.filterData.searchedText = searchedText;
+    this.filterHandlers();
   };
 
   alterNotCompletedCheckBox = (isChecked) => {
-    this.props.filterData.notCompletedCheckBox = isChecked;
-    this.props.filterHandlers.setFilterData(this.props.filterData);
+    this.filterData.notCompletedCheckBox = isChecked;
+    this.filterHandlers();
   };
 
   updateFilter = (event, filterMask, filterIds) => {
-    const newFilterMask = [...filterMask];
-
     let anyThingChanged = true;
     const targetButton =
       event.target.tagName === "BUTTON"
@@ -81,27 +82,22 @@ class FilterPanel {
 
     switch (targetButton.id) {
       case filterIds[0]:
-        newFilterMask[0] ^= 1;
-        changeFilterBtnStyle(targetButton, dataFilter[0]);
+        filterMask[0] ^= 1;
+        changeFilterBtnStyle(targetButton, filterMask[0]);
         break;
       case filterIds[1]:
-        newFilterMask[1] ^= 1;
-        changeFilterBtnStyle(targetButton, dataFilter[1]);
+        filterMask[1] ^= 1;
+        changeFilterBtnStyle(targetButton, filterMask[1]);
         break;
       case filterIds[2]:
-        newFilterMask[2] ^= 1;
-        changeFilterBtnStyle(targetButton, dataFilter[2]);
+        filterMask[2] ^= 1;
+        changeFilterBtnStyle(targetButton, filterMask[2]);
         break;
       default:
         anyThingChanged = false;
     }
     if (anyThingChanged) {
-      if (filterIds[0] === this.categoryFilterIds[0]) {
-        this.props.filterData.urgencyFilterMask = newFilterMask;
-      } else {
-        this.props.filterData.categoryFilterMask = newFilterMask;
-      }
-      this.props.filterHandlers.setFilterData(this.props.filterData);
+      this.filterHandlers();
     }
   };
 }

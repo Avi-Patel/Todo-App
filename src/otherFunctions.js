@@ -13,7 +13,7 @@ export const showSnackbar = (message) => {
   );
 };
 
-export const changeBtnStyle = (target, selected) => {
+export const changeFilterBtnStyle = (target, selected) => {
   if (selected) {
     target.style.backgroundColor = "rgb(45, 45, 45)";
     target.style.boxShadow = "0px 0px 4px 2px white";

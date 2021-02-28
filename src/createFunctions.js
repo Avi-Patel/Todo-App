@@ -1,12 +1,4 @@
-import { checkAndRenderOneToDo } from "/src/renderFunction.js";
-import { data, pushNewToDo } from "/src/localDataAndElements.js";
-import { createToDoInDatabase } from "/src/server.js";
 import { showSnackbar } from "/src/otherFunctions.js";
-import { addActions } from "/src/history.js";
-import {
-  getDocumentElementUsingSelector,
-  emptyInputTextBox,
-} from "/src/index.js";
 import { commands } from "/src/consts.js";
 
 // export const createElement = (
@@ -67,49 +59,70 @@ import { commands } from "/src/consts.js";
 //   return toDoNode;
 // };
 
-const createToDoObject = ({ title, urgency, category }) => ({
-  ID: data.counter++,
-  dateAsID: new Date().toLocaleString(),
+const createToDoObject = ({ counter, title, urgency, category }) => ({
+  ID: counter,
   title: title,
   urgency: urgency,
   category: category,
   completed: false,
 });
 
-export const createAndAddTodo = (mockServer, localData, historyActions) => {
+const collectInputsForTodo = () => {
   const TDTitleInput = document.querySelector("#TDTitle");
   const title = TDTitleInput.value.trim();
-  if (title === "") {
-    return;
-  }
+  TDTitleInput.focus();
   const urgency = document.querySelector("#urgencySelect").selectedIndex;
   const category = document.querySelector("#categorySelect").selectedIndex;
+  return [title, urgency, category];
+};
 
-  TDTitleInput.focus();
+const createToDo = ({
+  todoItem,
+  mockServer,
+  localData,
+  historyActions,
+  render,
+}) => {
+  mockServer
+    .createToDoInDatabase(todoItem)
+    .then(() => {
+      localData.pushNewToDo(todoItem);
+      localData.setCounter(localData.getCounter() + 1);
+      console.log("upto history");
+      historyActions.addActions(
+        commands.CREATE,
+        [todoItem.ID],
+        [{ ...todoItem }]
+      );
+      console.log("upto Render");
+      render();
+      document.querySelector("#TDTitle").value = "";
+    })
+    .catch((e) => {
+      showSnackbar(e);
+    });
+};
 
-  createToDo({ title, urgency, category });
+export const createAndAddTodo = ({
+  mockServer,
+  localData,
+  historyActions,
+  render,
+}) => {
+  // console.log(localData);
+  // console.log(mockServer);
+  // console.log(render);
+  // console.log(historyActions);
+  const [title, urgency, category] = collectInputsForTodo();
+  if (title === "") return;
+  const todoItem = createToDoObject({
+    counter: localData.getCounter(),
+    title,
+    urgency,
+    category,
+  });
 
-  const createToDo = ({ title, urgency, category }) => {
-    const toDoItem = createToDoObject({ title, urgency, category });
-    mockServer
-      .createToDoInDatabase(toDoItem)
-      .then(() => {
-        localData.pushNewToDo(toDoItem);
-        historyActions.addActions(
-          commands.CREATE,
-          [toDoItem.ID],
-          [{ ...toDoItem }]
-        );
-        checkAndRenderOneToDo(toDoItem);
-        emptyInputTextBox("#TDTitle");
-      })
-      .catch((e) => {
-        data.counter--;
-        showSnackbar(e);
-      });
-  };
-  const emptyInputTextBox = (selectorValue) =>
-    (document.querySelector(selectorValue).value = "");
+  createToDo({ todoItem, mockServer, localData, historyActions, render });
 };
 
 // export const createModal = (title, urgencyIndex, categoryIndex) => {

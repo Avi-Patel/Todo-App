@@ -8,7 +8,7 @@ export const commands = {
   DELETE_IN_BULK: "deleteInBulk",
 };
 
-export const categoryIcons = {
+export const categoryIcon = {
   USERALT: "fa-user",
   BOOKOPEN: "fa-book",
   USERS: "fa-users",

@@ -1,18 +1,4 @@
-import { checkAndRenderOneToDo, displayToDos } from "/src/renderFunction.js";
-// import {
-//   updateToDoInDatabase,
-//   deleteToDoFromDatabase,
-//   createToDoInDatabase,
-//   bulkUpdateInDatabase,
-//   bulkCreateInDatabase,
-//   bulkDeleteFromDatabase,
-// } from "/src/server.js";
-import { updateCountsForRemovedToDo, updateAnalytics } from "/src/analytics.js";
 import { showSnackbar, copyContent } from "/src/otherFunctions.js";
-import { deleteDocumentElementUsingSelector } from "/src/index.js";
-// import {
-//   localDataInCurrentState
-// } from "/src/localDataAndElements.js";
 import { commands } from "/src/consts.js";
 
 // const history = {
@@ -25,7 +11,7 @@ export const historyActions = (mockServer, localData) => {
   const actions = [];
   return {
     addActions: (commandType, toDoIDs, toDos, oldToDos) => {
-      actions = actions.slice(0, position + 1);
+      actions.splice(position + 1, actions.length);
       const newAction = {
         command: commandType,
         IDs: toDoIDs,
