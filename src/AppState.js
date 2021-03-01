@@ -1,12 +1,14 @@
-import { createAndAddTodo } from "/src/createFunctions.js";
+import { createAndAddTodo } from "/src/create-todo.js";
 import { showSnackbar } from "/src/otherFunctions.js";
-import { createMockServer } from "/src/server.js";
-import { historyActions } from "./history.js";
-import { todoActionHandlers } from "./operationsOnToDo.js";
-import { TodoRenderHandlers } from "./renderFunction.js";
+import { createMockServer } from "/src/Mock-Server.js";
+import { history } from "./history.js";
+import { todoActionHandlers } from "./todo-action-handlers.js";
 import { urgency, category, color, categoryIcon } from "./consts.js";
-import { FilterPanel } from "./FilterPanel.js";
+import { FilterPanel } from "./view/filter-panel.js";
 import { createLocalDatabase } from "./Local-Database.js";
+import { AnalyticsUpdater } from "./Analytics.js";
+import { filterCheckerOnTodo } from "./filter-checker-on-todo.js";
+import { createTodoNode } from "./view/create-todo-node.js";
 
 export class TodoAppState {
   constructor() {
@@ -16,47 +18,83 @@ export class TodoAppState {
       notCompletedCheckBox: false,
       searchedText: "",
     };
-
-    this.mockServrer = createMockServer();
-    this.localDataInAppState = new createLocalDatabase();
-    this.histroyActions = historyActions(
-      this.mockServrer,
-      this.localDataInAppState
-    );
-
-    this.todoActionHandlers = todoActionHandlers({
-      mockServrer: this.mockServrer,
-      localData: this.localDataInAppState,
-      historyActions: this.historyActions,
-      render: this.render,
-    });
+    this.urgencyIconColors = [color.GREEN, color.YELLOW, color.RED];
+    this.categoryIcons = [
+      categoryIcon.USERALT,
+      categoryIcon.BOOKOPEN,
+      categoryIcon.USERS,
+    ];
 
     this.filterPanel = new FilterPanel({
       filterHandlers: this.render,
       urgency,
       category,
     });
-    this.todoRenderHandlers = new TodoRenderHandlers({
-      todoActionHandlers: this.todoActionHandlers,
-      localData: this.localDataInAppState,
-      filterData: this.filterPanel.filterData,
-      color,
-      categoryIcon,
+    this.filterChecker = filterCheckerOnTodo(this.filterPanel.filterData);
+    this.analyticsUpdater = new AnalyticsUpdater();
+    this.localData = new createLocalDatabase();
+
+    this.mockServer = createMockServer();
+
+    this.history = history(this.mockServer, this.localData, this.render);
+
+    this.todoActionHandlers = todoActionHandlers({
+      mockServer: this.mockServer,
+      localData: this.localData,
+      history: this.history,
+      render: this.render,
     });
 
     this.DOMElements = {
-      todoAddBtn: document.querySelector("#TDaddBtn"),
-      completeSelection: document.querySelector("#completeSelection"),
-      clearSelection: document.querySelector("#clearSelection"),
-      deleteSelection: document.querySelector("#deleteSelection"),
+      todoAddBtn: document.querySelector("#todo-add-btn"),
+      completeSelection: document.querySelector("#complete-selection"),
+      clearSelection: document.querySelector("#clear-selection"),
+      deleteSelection: document.querySelector("#delete-selection"),
+      todosBox: document.querySelector("#todos-box"),
     };
 
     this.updateHeaderDate();
-    this.addEventListeners();
+    this.setEventListeners();
   }
 
+  setAnalytics = (numberOfCompletedTodos, numberOfTotalTodos) => {
+    this.analyticsUpdater.analytics.setNumberOfCompletedTodos(
+      numberOfCompletedTodos
+    );
+    this.analyticsUpdater.analytics.setNumberOfTotalTodos(numberOfTotalTodos);
+  };
+
+  displayTodos = () => {
+    let numberOfCompletedTodos = 0,
+      numberOfTotalTodos = 0;
+
+    this.DOMElements.todosBox.innerHTML = "";
+
+    this.localData.allTodos.forEach((todoItem) => {
+      const conditionSatisfied =
+        this.filterChecker.checkWithFilter(todoItem) &&
+        this.filterChecker.containSearchedWord(todoItem.title);
+
+      if (conditionSatisfied) {
+        numberOfTotalTodos++;
+        if (todoItem.completed) {
+          numberOfCompletedTodos++;
+        }
+        const newtodoNode = createTodoNode(
+          todoItem,
+          this.localData,
+          this.todoActionHandlers
+        );
+        this.DOMElements.todosBox.appendChild(newtodoNode);
+      }
+    });
+    this.localData.emptyCurrentSelectedArray();
+    this.setAnalytics(numberOfCompletedTodos, numberOfTotalTodos);
+    this.analyticsUpdater.updateAnalyticsOnView();
+  };
+
   render = () => {
-    this.todoRenderHandlers.displayToDos();
+    this.displayTodos();
   };
 
   updateHeaderDate = () =>
@@ -64,48 +102,42 @@ export class TodoAppState {
       "#headerDate"
     ).textContent = `${new Date().toDateString()}`);
 
-  filterHandlers = () => {
-    // this.filterData = newFilterData;
-    console.log(this.filterData);
-    this.render();
-  };
-
-  addEventListeners = () => {
+  setEventListeners = () => {
     window.addEventListener("keypress", (event) => {
       if (event.ctrlKey && event.key === "z") {
         console.log("undo event");
         this.todoActionHandlers.clearSelection();
-        this.histroyActions.undo();
+        this.history.undo();
       } else if (event.ctrlKey && event.key === "r") {
         console.log("redo event");
         this.todoActionHandlers.clearSelection();
-        this.histroyActions.redo();
+        this.history.redo();
       }
     });
     this.DOMElements.todoAddBtn.addEventListener("click", () => {
-      console.log(this.localDataInAppState);
+      console.log(this.localData);
       createAndAddTodo({
-        mockServer: this.mockServrer,
-        localData: this.localDataInAppState,
-        historyActions: this.histroyActions,
+        mockServer: this.mockServer,
+        localData: this.localData,
+        history: this.history,
         render: this.render,
       });
     });
     this.DOMElements.completeSelection.addEventListener("click", () =>
-      this.localDataInAppState.curOnScreenSelected.length !== 0
+      this.localData.getCurrentSelected().length !== 0
         ? this.todoActionHandlers.completeAllSelectedTodos()
-        : showSnackbar("No ToDos selected")
+        : showSnackbar("No Todos selected")
     );
 
     this.DOMElements.clearSelection.addEventListener("click", () =>
-      this.localDataInAppState.curOnScreenSelected.length !== 0
+      this.localData.getCurrentSelected().length !== 0
         ? this.todoActionHandlers.clearSelection()
-        : showSnackbar("No ToDos selected")
+        : showSnackbar("No Todos selected")
     );
     this.DOMElements.deleteSelection.addEventListener("click", () =>
-      this.localDataInAppState.curOnScreenSelected.length !== 0
-        ? this.todoActionHandlers.deleteAllSelectedToDos()
-        : showSnackbar("No ToDos selected")
+      this.localData.getCurrentSelected().length !== 0
+        ? this.todoActionHandlers.deleteAllSelectedTodos()
+        : showSnackbar("No Todos selected")
     );
   };
 }

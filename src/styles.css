@@ -235,7 +235,7 @@ select:focus {
   font-size: 14px;
 }
 
-.TDaddBtn {
+.todo-add-btn {
   margin: 8px 0px;
   width: 60px;
   height: 60px;
@@ -373,7 +373,7 @@ select:focus {
   justify-content: center;
   align-items: center;
 }
-.updateToDoTitle {
+.updateTodoTitle {
   border-radius: 20px;
 }
 .updateModalPreference {

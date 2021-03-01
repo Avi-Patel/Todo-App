@@ -26,9 +26,9 @@ export const changeFilterBtnStyle = (target, selected) => {
 export const extractClosestNodeFromPath = (event, type) =>
   event.target.closest(type);
 
-export const copyContent = (toDox, toDoy) => {
-  Object.keys(toDox).forEach((key) => {
-    toDox[key] = toDoy[key];
+export const copyContent = (todox, todoy) => {
+  Object.keys(todox).forEach((key) => {
+    todox[key] = todoy[key];
   });
 };
 

@@ -1,63 +1,78 @@
-export const indirectHandlersForTodo = {
-  updateToDo: (toDo, updatedToDo, render) => {
-    mockServer
-      .updateToDoInDatabase(updatedToDo.ID, updatedToDo)
-      .then((returnedToDo) => {
+import { showSnackbar } from "/src/otherFunctions.js";
+import { commands } from "./consts.js";
+export const indirectHandlersForTodo = (
+  mockServer,
+  localData,
+  history,
+  render
+) => {
+  return {
+    updateTodo: (todo, updatedTodo) => {
+      mockServer
+        .updateTodoInDatabase(updatedTodo.ID, updatedTodo)
+        .then((returnedTodo) => {
+          console.log(localData);
+          const index = localData.getIndexInLocalDatabase(updatedTodo.ID);
+          history.addActions(
+            commands.EDIT,
+            [todo.ID],
+            [{ ...returnedTodo }],
+            [{ ...todo }]
+          );
+          localData.replaceTodoAtAnyIndex(index, { ...returnedTodo });
+          render();
+        })
+        .catch((e) => showSnackbar(e));
+    },
+
+    addListenerToModalUpdateBtn: function (btnID, todo, updateModal) {
+      const updateBtn = document.querySelector(`#${btnID}`);
+      updateBtn.addEventListener("click", () => {
+        const updatedTitle = updateModal.querySelector("#update-todo-title")
+          .value;
+
+        if (updatedTitle.trim() !== "") {
+          const updatedTodo = { ...todo };
+          updatedTodo.title = updatedTitle;
+          updatedTodo.urgency = updateModal.querySelector(
+            "#updated-urgency"
+          ).selectedIndex;
+          updatedTodo.category = updateModal.querySelector(
+            "#updated-category"
+          ).selectedIndex;
+
+          this.updateTodo(todo, updatedTodo);
+          updateModal.remove();
+        }
+      });
+    },
+
+    addListenerToModalCancelBtn: (btnID, updateModal) => {
+      const cancelBtn = document.querySelector(`#${btnID}`);
+      cancelBtn.addEventListener("click", () => updateModal.remove());
+    },
+
+    makeArrayOfIndexsAndTodos: (selectedIds) => {
+      const indexs = [],
+        todos = [];
+      selectedIds.forEach((id, i) => {
         const index = localData.getIndexInLocalDatabase(id);
-        addActions(
-          commands.EDIT,
-          [toDo.ID],
-          [{ ...returnedToDo }],
-          [{ ...toDo }]
-        );
-        localData.replaceTodoAtAnyIndex(index, { ...returnedToDo });
-        render();
-      })
-      .catch((e) => showSnackbar(e));
-  },
-
-  addListenerToModalUpdateBtn: (btnID, toDo, updateModal) => {
-    const updateBtn = getDocumentElementUsingSelector(`#${btnID}`);
-    updateBtn.addEventListener("click", () => {
-      const updatedTitle = updateModal.querySelector("#updateToDoTitle").value;
-
-      if (updatedTitle.trim() !== "") {
-        const updatedToDo = { ...toDo };
-        updatedToDo.title = updatedTitle;
-        updatedToDo.urgency = updateModal.querySelector(
-          "#updatedUrgency"
-        ).selectedIndex;
-        updatedToDo.category = updateModal.querySelector(
-          "#updatedCategory"
-        ).selectedIndex;
-
-        this.updateToDo(toDo, updatedToDo);
-        updateModal.remove();
+        todos.push({ ...localData.getTodo(index) });
+        indexs.push(index);
+        todos[todos.length - 1].completed = true;
+      });
+      return [indexs, todos];
+    },
+    changeBtnStyleForSelection: (id, selected) => {
+      const target = document.querySelector(
+        `[data-id="${id}"] [data-type=${commands.SELECT}]`
+      );
+      if (selected) {
+        target.style.backgroundColor = "rgb(64, 64, 255)";
+        target.style.border = "1px solid white";
+      } else {
+        target.style.backgroundColor = "";
       }
-    });
-  },
-
-  addListenerToModalCancelBtn: (btnID, updateModal) => {
-    const cancelBtn = getDocumentElementUsingSelector(`#${btnID}`);
-    cancelBtn.addEventListener("click", () => updateModal.remove());
-  },
-
-  filterCurSelectedToDoArray: (ids) => {
-    const newIds = [];
-    ids.forEach((id) => {
-      if (!localData.getToDo(localData.getIndexInLocalDatabase(id)).completed) {
-        newIds.push(id);
-      }
-    });
-    return newIds;
-  },
-
-  makeArrayOfIndexsAndToDos: (selectedIds, indexs, toDos) => {
-    selectedIds.forEach((id, i) => {
-      const index = localData.getIndexInLocalDatabase(id);
-      toDos.push({ ...localData.getToDo(index) });
-      indexs.push(index);
-      toDos[toDos.length - 1].completed = true;
-    });
-  },
+    },
+  };
 };

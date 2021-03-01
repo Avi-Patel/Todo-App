@@ -1,40 +1,35 @@
 import { copyContent } from "/src/otherFunctions.js";
-// const success = true;
 
-const randomBooleanValue = () => Math.random() <= 0.98;
-// const number = Math.random();
-// console.log(number);
-// if (number <= 0.9) return true;
-// else return false;
-// };
+// const saveTodos = () =>
+// new Promise((resolve, reject) => {
+//   todos.sort(sortTodosByID);
+//   localStorage.setItem("todos", JSON.stringify(todos));
+//   resolve();
+// });
 
-const sortToDosByID = (toDo1, ToDo2) => toDo1.ID - ToDo2.ID;
+// const sortTodosByID = (todo1, Todo2) => todo1.ID - Todo2.ID;
 
 export const createMockServer = () => {
   const todos = [];
+
+  const getIndexInDatabase = (id) => {
+    let index = null;
+    todos.forEach((todo, i) => {
+      if (todo.ID === id) index = i;
+    });
+    return index;
+  };
+
+  const randomBooleanValue = () => Math.random() <= 0.98;
+
   return {
-    saveToDos: () =>
-      new Promise((resolve, reject) => {
-        todos.sort(sortToDosByID);
-        localStorage.setItem("todos", JSON.stringify(todos));
-        resolve();
-      }),
-
-    getIndexInDatabase: (id) => {
-      let index = null;
-      todos.forEach((toDo, i) => {
-        if (toDo.ID === id) index = i;
-      });
-      return index;
-    },
-
-    getToDosFromDatabase: () =>
+    getTodosFromDatabase: () =>
       new Promise((resolve, reject) => {
         if (randomBooleanValue()) {
-          const storedToDos = JSON.parse(localStorage.getItem("todos"));
+          const storedTodos = JSON.parse(localStorage.getItem("todos"));
           todos.length = 0;
-          if (storedToDos) {
-            storedToDos.forEach((toDo) => todos.push({ ...toDo }));
+          if (storedTodos) {
+            storedTodos.forEach((todo) => todos.push({ ...todo }));
           }
           resolve(todos);
         } else {
@@ -44,10 +39,10 @@ export const createMockServer = () => {
         }
       }),
 
-    createToDoInDatabase: (toDo) =>
+    createTodoInDatabase: (todo) =>
       new Promise((resolve, reject) => {
         if (randomBooleanValue()) {
-          todos.push({ ...toDo });
+          todos.push({ ...todo });
           resolve();
         } else {
           reject(
@@ -56,19 +51,20 @@ export const createMockServer = () => {
         }
       }),
 
-    updateToDoInDatabase: (id, toDo) =>
+    updateTodoInDatabase: (id, todo) =>
       new Promise((resolve, reject) => {
         if (randomBooleanValue()) {
-          copyContent(todos[getIndexInDatabase(id)], toDo);
-          resolve(toDo);
+          copyContent(todos[getIndexInDatabase(id)], todo);
+          resolve(todo);
         } else {
           reject(
             "Opps!! Cannot update right now, plz try again after sometime"
           );
         }
+        console.log("completed");
       }),
 
-    deleteToDoFromDatabase: (id) =>
+    deleteTodoFromDatabase: (id) =>
       new Promise((resolve, reject) => {
         if (randomBooleanValue()) {
           todos.splice(getIndexInDatabase(id), 1);
@@ -80,11 +76,11 @@ export const createMockServer = () => {
         }
       }),
 
-    bulkUpdateInDatabase: (ids, updatedToDos) =>
+    bulkUpdateInDatabase: (ids, updatedTodos) =>
       new Promise((resolve, reject) => {
         if (randomBooleanValue()) {
           ids.forEach((id, i) => {
-            copyContent(todos[getIndexInDatabase(id)], updatedToDos[i]);
+            copyContent(todos[getIndexInDatabase(id)], updatedTodos[i]);
           });
           resolve();
         } else {
@@ -108,10 +104,10 @@ export const createMockServer = () => {
         }
       }),
 
-    bulkCreateInDatabase: (newToDods) =>
+    bulkCreateInDatabase: (newTodods) =>
       new Promise((resolve, reject) => {
         if (randomBooleanValue()) {
-          newToDods.forEach((newToDo) => todos.push({ ...newToDo }));
+          newTodods.forEach((newTodo) => todos.push({ ...newTodo }));
           resolve();
         } else {
           reject(

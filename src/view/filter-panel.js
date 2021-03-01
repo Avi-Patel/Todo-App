@@ -1,7 +1,7 @@
 import {
   changeFilterBtnStyle,
   extractClosestNodeFromPath,
-} from "./otherFunctions.js";
+} from "../otherFunctions.js";
 
 export class FilterPanel {
   constructor({ filterHandlers, urgency, category }) {
@@ -11,14 +11,15 @@ export class FilterPanel {
       notCompletedCheckBox: false,
       searchedText: "",
     };
+    this.timeOutID = undefined;
     this.filterHandlers = filterHandlers;
 
     this.DOMElements = {
-      urgencyFilter: document.querySelector("#urgencyFilter"),
-      categoryFilter: document.querySelector("#categoryFilter"),
-      notCompletedCheckBox: document.querySelector("#notCompletedCheckBox"),
-      searchInput: document.querySelector("#searchInput"),
-      clearBtn: document.querySelector("#clearBtn"),
+      urgencyFilter: document.querySelector("#urgency-filter"),
+      categoryFilter: document.querySelector("#category-filter"),
+      notCompletedCheckBox: document.querySelector("#not-completed-check-box"),
+      searchInput: document.querySelector("#search-input"),
+      clearBtn: document.querySelector("#clear-btn"),
     };
     this.urgencyFilterIds = [urgency.LOW, urgency.MEDIUM, urgency.HIGH];
     this.categoryFilterIds = [
@@ -49,9 +50,9 @@ export class FilterPanel {
       this.alterNotCompletedCheckBox(event.target.checked)
     );
     this.DOMElements.searchInput.addEventListener("input", (event) => {
-      clearTimeout(data.timeOutID);
-      data.timeOutID = setTimeout(
-        (event) => this.updateSearchedText(event.target.value),
+      clearTimeout(this.timeOutID);
+      this.timeOutID = setTimeout(
+        () => this.updateSearchedText(event.target.value),
         500
       );
     });
