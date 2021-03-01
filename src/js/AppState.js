@@ -4,11 +4,11 @@ import { createMockServer } from "./model/Mock-Server.js";
 import { history } from "./model/history.js";
 import { todoActionHandlers } from "./todo-action-handlers.js";
 import { urgency, category } from "./consts.js";
-import { FilterPanel } from "./view/filter-panel.js";
+import { FilterPanel } from "./filter-panel.js";
 import { createLocalDatabase } from "./model/Local-Database.js";
 import { AnalyticsUpdater } from "./Analytics.js";
 import { filterCheckerOnTodo } from "./filter-checker-on-todo.js";
-import { createTodoNode } from "./view/create-todo-node.js";
+import { createTodoNode } from "./create-todo-node.js";
 
 export class TodoAppState {
   constructor() {

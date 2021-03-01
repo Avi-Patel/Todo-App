@@ -1,4 +1,4 @@
-import { commands, color, categoryIcon } from "../consts.js";
+import { commands, color, categoryIcon } from "./consts.js";
 
 const extractClosestNodeFromPath = (event, type) => event.target.closest(type);
 
