@@ -1,6 +1,6 @@
-import { createModal } from "./view/create-modal.js";
-import { showSnackbar } from "/src/otherFunctions.js";
-import { commands } from "/src/consts.js";
+import { createModal } from "../js/view/create-modal.js";
+import { showSnackbar } from "./otherFunctions.js";
+import { commands } from "./consts.js";
 import { indirectHandlersForTodo } from "./todo-indirect-handlers.js";
 
 export const todoActionHandlers = ({

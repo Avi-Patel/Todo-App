@@ -1,15 +1,14 @@
-import { createAndAddTodo } from "/src/create-todo.js";
-import { showSnackbar } from "/src/otherFunctions.js";
-import { createMockServer } from "/src/Mock-Server.js";
-import { history } from "./history.js";
+import { createAndAddTodo } from "./create-todo.js";
+import { showSnackbar } from "./otherFunctions.js";
+import { createMockServer } from "./model/Mock-Server.js";
+import { history } from "./model/history.js";
 import { todoActionHandlers } from "./todo-action-handlers.js";
 import { urgency, category, color, categoryIcon } from "./consts.js";
 import { FilterPanel } from "./view/filter-panel.js";
-import { createLocalDatabase } from "./Local-Database.js";
+import { createLocalDatabase } from "./model/Local-Database.js";
 import { AnalyticsUpdater } from "./Analytics.js";
 import { filterCheckerOnTodo } from "./filter-checker-on-todo.js";
 import { createTodoNode } from "./view/create-todo-node.js";
-
 export class TodoAppState {
   constructor() {
     this.filterData = {

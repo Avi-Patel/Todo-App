@@ -1,5 +1,5 @@
-import { showSnackbar } from "/src/otherFunctions.js";
-import { commands } from "/src/consts.js";
+import { showSnackbar } from "./otherFunctions.js";
+import { commands } from "./consts.js";
 
 const createTodoObject = ({ counter, title, urgency, category }) => ({
   ID: counter,

@@ -1,4 +1,4 @@
-import { showSnackbar, copyContent } from "/src/otherFunctions.js";
+import { showSnackbar, copyContent } from "./otherFunctions.js";
 
 const findIndexToInsert = (id, localData) => {
   let index = localData.allTodos.length;

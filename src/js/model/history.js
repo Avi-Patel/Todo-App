@@ -1,6 +1,6 @@
 // import { showSnackbar, copyContent } from "/src/otherFunctions.js";
-import { commands } from "/src/consts.js";
-import { historyActionsHandlers } from "./history-actions-handlers.js";
+import { commands } from "../consts.js";
+import { historyActionsHandlers } from "../history-actions-handlers.js";
 
 // const history = {
 //   position: -1,

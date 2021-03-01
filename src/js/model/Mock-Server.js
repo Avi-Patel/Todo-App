@@ -1,4 +1,4 @@
-import { copyContent } from "/src/otherFunctions.js";
+import { copyContent } from "../otherFunctions.js";
 
 // const saveTodos = () =>
 // new Promise((resolve, reject) => {
