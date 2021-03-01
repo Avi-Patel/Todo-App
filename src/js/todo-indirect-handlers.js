@@ -1,4 +1,4 @@
-import { showSnackbar } from "./otherFunctions.js";
+import { showSnackbar } from "./helper-functions.js";
 import { commands } from "./consts.js";
 export const indirectHandlersForTodo = (
   mockServer,

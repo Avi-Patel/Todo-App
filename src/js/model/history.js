@@ -1,4 +1,3 @@
-// import { showSnackbar, copyContent } from "/src/otherFunctions.js";
 import { commands } from "../consts.js";
 import { historyActionsHandlers } from "../history-actions-handlers.js";
 

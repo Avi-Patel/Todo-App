@@ -1,5 +1,3 @@
-import { copyContent } from "../otherFunctions.js";
-
 // const saveTodos = () =>
 // new Promise((resolve, reject) => {
 //   todos.sort(sortTodosByID);
@@ -54,7 +52,7 @@ export const createMockServer = () => {
     updateTodoInDatabase: (id, todo) =>
       new Promise((resolve, reject) => {
         if (randomBooleanValue()) {
-          copyContent(todos[getIndexInDatabase(id)], todo);
+          todos[getIndexInDatabase(id)] = { ...todo };
           resolve(todo);
         } else {
           reject(
@@ -80,7 +78,7 @@ export const createMockServer = () => {
       new Promise((resolve, reject) => {
         if (randomBooleanValue()) {
           ids.forEach((id, i) => {
-            copyContent(todos[getIndexInDatabase(id)], updatedTodos[i]);
+            todos[getIndexInDatabase(id)] = { ...updatedTodos[i] };
           });
           resolve();
         } else {

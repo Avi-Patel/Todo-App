@@ -1,4 +1,4 @@
-import { showSnackbar, copyContent } from "./otherFunctions.js";
+import { showSnackbar } from "./otherFunctions.js";
 
 const findIndexToInsert = (id, localData) => {
   let index = localData.allTodos.length;
@@ -50,11 +50,11 @@ export const historyActionsHandlers = (mockServer, localData, render) => {
       return mockServer
         .updateTodoInDatabase(id, todoCopy)
         .then((returnedTodo) => {
-          copyContent(
-            localData.allTodos[localData.getIndexInLocalDatabase(id)],
-            returnedTodo
-          );
-          render();
+          localData.allTodos.replaceTodoAtAnyIndex(
+            localData.getIndexInLocalDatabase(id),
+            { ...returnedTodo }
+          ),
+            render();
           if (isUndo) {
             position--;
           } else {

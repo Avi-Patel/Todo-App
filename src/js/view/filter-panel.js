@@ -1,7 +1,7 @@
 import {
   changeFilterBtnStyle,
   extractClosestNodeFromPath,
-} from "../otherFunctions.js";
+} from "../helper-functions.js";
 
 export class FilterPanel {
   constructor({ filterHandlers, urgency, category }) {
@@ -80,7 +80,7 @@ export class FilterPanel {
         : extractClosestNodeFromPath(event, "button");
 
     if (!targetButton) return;
-
+    s;
     switch (targetButton.id) {
       case filterIds[0]:
         filterMask[0] ^= 1;
