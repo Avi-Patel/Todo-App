@@ -1,8 +1,8 @@
-import { commands, color, categoryIcon } from "./consts.js";
+import { commands, color, categoryIcon } from "../consts.js";
 
 const extractClosestNodeFromPath = (event, type) => event.target.closest(type);
 
-export const createTodoNode = (todo, localData, todoActionHandlers) => {
+const createTodoNode = (todo, callbacks) => {
   const urgencyIconColors = [color.GREEN, color.YELLOW, color.RED];
   const categoryIcons = [
     categoryIcon.USERALT,
@@ -42,14 +42,12 @@ export const createTodoNode = (todo, localData, todoActionHandlers) => {
     ${todo.completed ? "Completed Undo?" : "Mark Completed"}
     </button>
     <button class="selectWhiteCircle mar8" data-type="select"></button>`;
-  addListenerForTodoNode(todoNode, localData, todoActionHandlers);
+  addListenerForTodoNode(todoNode, callbacks);
   return todoNode;
 };
 
-const addListenerForTodoNode = (newTodoNode, localData, todoActionHandlers) => {
+const addListenerForTodoNode = (newTodoNode, callbacks) => {
   newTodoNode.addEventListener("click", (event) => {
-    console.log("event called");
-    console.log(todoActionHandlers);
     const targetButton =
       event.target.tagName === "BUTTON"
         ? event.target
@@ -61,21 +59,33 @@ const addListenerForTodoNode = (newTodoNode, localData, todoActionHandlers) => {
     console.log(targetButton.dataset.type, commands.MARK_COMPLETED);
     switch (targetButton.dataset.type) {
       case commands.MARK_COMPLETED:
-        todoActionHandlers.alterCompletionOfTodo(id);
+        callbacks.alterCompletionOfTodo(id);
         break;
       case commands.SELECT:
-        todoActionHandlers.addOrRemoveFromSelected(id);
+        callbacks.addOrRemoveFromSelected(id);
         break;
       case commands.DELETE:
-        todoActionHandlers.deleteTodo(id);
-        localData.emptyCurrentSelectedArray();
+        callbacks.deleteTodo(id);
+        // localData.emptyCurrentSelectedArray();
         break;
       case commands.EDIT:
-        todoActionHandlers.showModal(id);
-        localData.emptyCurrentSelectedArray();
+        callbacks.showModal(id);
+        // localData.emptyCurrentSelectedArray();
         break;
       default:
         break;
     }
   });
+};
+
+export const displayTodos = (todos, callbacks) => {
+  document.querySelector("#todo-add-btn").innerHTML = "";
+
+  todos.allTodos.forEach((todoItem) => {
+    const newtodoNode = createTodoNode(todoItem, callbacks);
+    document.querySelector("#todo-add-btn").appendChild(newtodoNode);
+  });
+  // this.localData.emptyCurrentSelectedArray();
+  // this.setAnalytics(numberOfCompletedTodos, numberOfTotalTodos);
+  // this.analyticsUpdater.updateAnalyticsOnView();
 };

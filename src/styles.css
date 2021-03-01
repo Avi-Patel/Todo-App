@@ -447,3 +447,8 @@ select:focus {
     opacity: 0;
   }
 }
+
+.filter-btn-selected{
+  background-color : rgb(45, 45, 45);
+  box-shadow : 0px 0px 4px 2px white;
+}

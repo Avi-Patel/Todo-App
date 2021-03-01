@@ -6,9 +6,9 @@ import { todoActionHandlers } from "./todo-action-handlers.js";
 import { urgency, category } from "./consts.js";
 import { FilterPanel } from "./filter-panel.js";
 import { createLocalDatabase } from "./model/Local-Database.js";
-import { AnalyticsUpdater } from "./Analytics.js";
+import { AnalyticsUpdater } from "./views/Analytics.js";
 import { filterCheckerOnTodo } from "./filter-checker-on-todo.js";
-import { createTodoNode } from "./create-todo-node.js";
+import { createTodoNode } from "./views/displayTodos.js";
 
 export class TodoAppState {
   constructor() {

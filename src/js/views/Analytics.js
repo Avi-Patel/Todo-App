@@ -22,19 +22,9 @@ class Analytics {
 
 export class AnalyticsUpdater {
   constructor() {
-    this.DOMElements = {
-      percentageText: document.querySelector("#percentage-text"),
-      ratioText: document.querySelector("#ratio-text"),
-    };
     this.analytics = new Analytics();
   }
-  updateCountsForRemovedTodo = (todo) => {
-    if (todo.completed) {
-      this.analytics.incrementNumberOfCompletedTodos(-1);
-    }
-    this.analytics.incrementNumberOfTotalTodos(-1);
-  };
-  updateCountsForAddedTodo = (todo) => {
+  updateCounts = (todo) => {
     if (todo.completed) {
       this.analytics.incrementNumberOfCompletedTodos(1);
     }
@@ -42,7 +32,7 @@ export class AnalyticsUpdater {
   };
 
   updateAnalyticsOnView = () => {
-    this.DOMElements.percentageText.textContent =
+    document.querySelector("#percentage-text").textContent =
       this.analytics.getNumberOfCompletedTodos() === 0
         ? "0 %"
         : Math.round(
@@ -50,6 +40,8 @@ export class AnalyticsUpdater {
               this.analytics.getNumberOfTotalTodos()) *
               100
           ) + " %";
-    this.DOMElements.ratioText.textContent = `${this.analytics.getNumberOfCompletedTodos()} / ${this.analytics.getNumberOfTotalTodos()}`;
+    document.querySelector(
+      "#ratio-text"
+    ).ratioText.textContent = `${this.analytics.getNumberOfCompletedTodos()} / ${this.analytics.getNumberOfTotalTodos()}`;
   };
 }
