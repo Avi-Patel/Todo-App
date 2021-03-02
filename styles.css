@@ -235,7 +235,7 @@ select:focus {
   font-size: 14px;
 }
 
-.TDaddBtn {
+.todo-add-btn {
   margin: 8px 0px;
   width: 60px;
   height: 60px;
@@ -327,18 +327,19 @@ select:focus {
 .markCompleted {
   border-radius: 20px;
 }
-.selectWhiteCircle {
+.whiteCircle {
   width: 20px;
   height: 20px;
   border-radius: 50%;
   background-color: white;
   border: none;
 }
-.selectBlueCircle {
+.blueCircle {
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background-color: wheat;
+  background-color: blue;
+  border: 1px solid white;
 }
 .selectAndDeleteCircle:hover {
   cursor: pointer;
@@ -373,7 +374,7 @@ select:focus {
   justify-content: center;
   align-items: center;
 }
-.updateToDoTitle {
+.updateTodoTitle {
   border-radius: 20px;
 }
 .updateModalPreference {
@@ -446,4 +447,9 @@ select:focus {
     bottom: -30px;
     opacity: 0;
   }
+}
+
+.filter-btn-selected{
+  background-color : rgb(45, 45, 45);
+  box-shadow : 0px 0px 4px 2px white;
 }

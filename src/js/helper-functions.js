@@ -1,8 +1,3 @@
-export const updateHeaderDate = () =>
-  (document.querySelector(
-    "#headerDate"
-  ).textContent = `${new Date().toDateString()}`);
-
 export const showSnackbar = (message) => {
   var snackbar = document.getElementById("snackbar");
   snackbar.className = "show";
@@ -13,8 +8,5 @@ export const showSnackbar = (message) => {
   );
 };
 
-export const copyContent=(toDox, toDoy)=>{
-  Object.keys(toDox).forEach((key)=>{
-    toDox[key]=toDoy[key];
-  })
-}
+export const extractClosestNodeFromPath = (event, type) =>
+  event.target.closest(type);
