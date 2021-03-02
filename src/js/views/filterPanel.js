@@ -1,4 +1,5 @@
 import { urgency, category } from "../consts.js";
+import { extractClosestNodeFromPath } from "../helper-functions.js";
 
 const findUrgencyTargetBtn = (event, callback) => {
   const targetButton =
@@ -41,10 +42,14 @@ const findUrgencyTargetBtn = (event, callback) => {
 const bindFilterUpdate = (callback) => {
   document
     .querySelector("#urgency-filter")
-    .addEventListener("click", (event) => this.updateFilter(event, callback));
+    .addEventListener("click", (event) =>
+      findUrgencyTargetBtn(event, callback)
+    );
   document
     .querySelector("#category-filter")
-    .addEventListener("click", (event) => this.updateFilter(event, callback));
+    .addEventListener("click", (event) =>
+      findUrgencyTargetBtn(event, callback)
+    );
 };
 
 const bindCheckBoxUpdate = (callback) => {
@@ -55,18 +60,27 @@ const bindCheckBoxUpdate = (callback) => {
 
 const bindSearchBoxUpdate = (callback) => {
   let timeOutID = undefined;
-  this.DOMElements.searchInput.addEventListener("change", (event) => {
+  document.querySelector("#search-input").addEventListener("input", (event) => {
     clearTimeout(timeOutID);
-    timeOutID = setTimeout(() => callback(event.target.value), 500);
+    timeOutID = setTimeout(() => callback(event.target.value), 300);
   });
+  document
+    .querySelector("#search-input")
+    .addEventListener("change", (event) => {
+      clearTimeout(timeOutID);
+      timeOutID = setTimeout(() => callback(event.target.value), 300);
+    });
 };
 
-document.querySelector("#clear-btn").addEventListener("click", () => {
-  document.querySelector("#search-input").value = "";
-});
+const bindClearSearchBtn = () => {
+  document.querySelector("#clear-btn").addEventListener("click", () => {
+    document.querySelector("#search-input").value = "";
+  });
+};
 
 export default {
   bindFilterUpdate,
   bindCheckBoxUpdate,
   bindSearchBoxUpdate,
+  bindClearSearchBtn,
 };

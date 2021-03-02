@@ -13,7 +13,15 @@ const findIndexToInsert = (id, localData) => {
   return index;
 };
 
-export const historyActionsHandlers = (mockServer, localData, render) => {
+const findIndex = (todos, id) => {
+  let index;
+  todos.forEach((todo, i) => {
+    if (todo.ID === id) index = i;
+  });
+  return index;
+};
+
+export const historyActionsHandlers = (mockServer, stateChangeHandler) => {
   return {
     onCreate: (id, position, isUndo) => {
       return mockServer

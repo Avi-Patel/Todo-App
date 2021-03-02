@@ -1,6 +1,6 @@
 import { commands, color, categoryIcon } from "../consts.js";
-
-const extractClosestNodeFromPath = (event, type) => event.target.closest(type);
+import { showModal } from "./create-modal.js";
+import { extractClosestNodeFromPath } from "../helper-functions.js";
 
 const createTodoNode = (todo, callbacks) => {
   const urgencyIconColors = [color.GREEN, color.YELLOW, color.RED];
@@ -41,13 +41,13 @@ const createTodoNode = (todo, callbacks) => {
     <button class="markCompleted greenBtn mar10" data-type="markCompleted"">
     ${todo.completed ? "Completed Undo?" : "Mark Completed"}
     </button>
-    <button class="selectWhiteCircle mar8" data-type="select"></button>`;
-  addListenerForTodoNode(todoNode, callbacks);
+    <button class="whiteCircle mar8" data-type="select"></button>`;
+  addListenerForTodoNode(todoNode, todo, callbacks);
   return todoNode;
 };
 
-const addListenerForTodoNode = (newTodoNode, callbacks) => {
-  newTodoNode.addEventListener("click", (event) => {
+const addListenerForTodoNode = (todoNode, todo, callbacks) => {
+  todoNode.addEventListener("click", (event) => {
     const targetButton =
       event.target.tagName === "BUTTON"
         ? event.target
@@ -55,21 +55,21 @@ const addListenerForTodoNode = (newTodoNode, callbacks) => {
 
     if (!targetButton) return;
 
-    const id = parseInt(newTodoNode.dataset.id);
-    console.log(targetButton.dataset.type, commands.MARK_COMPLETED);
+    const id = parseInt(todoNode.dataset.id);
+    // console.log(targetButton.dataset.type, commands.MARK_COMPLETED);
     switch (targetButton.dataset.type) {
       case commands.MARK_COMPLETED:
-        callbacks.alterCompletionOfTodo(id);
+        callbacks.handleAlteringCompletion(id);
         break;
       case commands.SELECT:
-        callbacks.addOrRemoveFromSelected(id);
+        callbacks.handleTogglingFromSelected(id);
         break;
       case commands.DELETE:
-        callbacks.deleteTodo(id);
+        callbacks.handleDeleteTodo(id);
         // localData.emptyCurrentSelectedArray();
         break;
       case commands.EDIT:
-        callbacks.showModal(id);
+        showModal(todo, callbacks.handleEditTodo);
         // localData.emptyCurrentSelectedArray();
         break;
       default:
@@ -78,12 +78,19 @@ const addListenerForTodoNode = (newTodoNode, callbacks) => {
   });
 };
 
-export const displayTodos = (todos, callbacks) => {
-  document.querySelector("#todo-add-btn").innerHTML = "";
+export const displayTodos = (todos, currentlySelectedIds, callbacks) => {
+  console.log(currentlySelectedIds);
+  console.log(callbacks);
+  document.querySelector("#todos-box").innerHTML = "";
 
-  todos.allTodos.forEach((todoItem) => {
-    const newtodoNode = createTodoNode(todoItem, callbacks);
-    document.querySelector("#todo-add-btn").appendChild(newtodoNode);
+  todos.forEach((todo) => {
+    const newtodoNode = createTodoNode(todo, callbacks);
+    if (currentlySelectedIds.indexOf(todo.ID) !== -1) {
+      newtodoNode
+        .querySelector(`[data-type=${commands.SELECT}]`)
+        .classList.toggle("blueCircle");
+    }
+    document.querySelector("#todos-box").appendChild(newtodoNode);
   });
   // this.localData.emptyCurrentSelectedArray();
   // this.setAnalytics(numberOfCompletedTodos, numberOfTotalTodos);

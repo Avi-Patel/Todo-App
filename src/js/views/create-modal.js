@@ -1,4 +1,30 @@
-export const createModal = (title, urgencyIndex, categoryIndex) => {
+const addListenerToModalUpdateBtn = (btnID, todo, updateModal, callback) => {
+  const updateBtn = document.querySelector(`#${btnID}`);
+  updateBtn.addEventListener("click", () => {
+    const updatedTitle = updateModal.querySelector("#update-todo-title").value;
+
+    if (updatedTitle.trim() !== "") {
+      const updatedTodo = { ...todo };
+      updatedTodo.title = updatedTitle;
+      updatedTodo.urgency = updateModal.querySelector(
+        "#updated-urgency"
+      ).selectedIndex;
+      updatedTodo.category = updateModal.querySelector(
+        "#updated-category"
+      ).selectedIndex;
+
+      callback(updatedTodo);
+      updateModal.remove();
+    }
+  });
+};
+
+const addListenerToModalCancelBtn = (btnID, updateModal) => {
+  const cancelBtn = document.querySelector(`#${btnID}`);
+  cancelBtn.addEventListener("click", () => updateModal.remove());
+};
+
+const createModal = (title, urgencyIndex, categoryIndex) => {
   const urgency = ["low", "medium", "high"];
   const category = ["personal", "academic", "social"];
   const updateModal = document.createElement("div");
@@ -39,4 +65,14 @@ export const createModal = (title, urgencyIndex, categoryIndex) => {
   </div>`;
 
   return updateModal;
+};
+
+export const showModal = (todo, callback) => {
+  const updateModal = createModal(todo.title, todo.urgency, todo.category);
+  updateModal.querySelector("#updated-urgency").selectedIndex = todo.urgency;
+  updateModal.querySelector("#updated-category").selectedIndex = todo.category;
+  document.body.appendChild(updateModal);
+
+  addListenerToModalUpdateBtn("updateTodoBtn", todo, updateModal, callback);
+  addListenerToModalCancelBtn("cancelUpdateBtn", updateModal);
 };

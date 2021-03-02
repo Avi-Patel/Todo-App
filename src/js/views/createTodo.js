@@ -3,7 +3,7 @@ const collectInputFromDOM = (event, callback) => {
   const urgency = document.querySelector("#urgency-input");
   const category = document.querySelector("#category-input");
 
-  if (title.nodeValue.trim() !== "") {
+  if (title.value.trim() !== "") {
     callback(title.value, urgency.selectedIndex, category.selectedIndex);
   }
 

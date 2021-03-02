@@ -42,6 +42,6 @@ export class AnalyticsUpdater {
           ) + " %";
     document.querySelector(
       "#ratio-text"
-    ).ratioText.textContent = `${this.analytics.getNumberOfCompletedTodos()} / ${this.analytics.getNumberOfTotalTodos()}`;
+    ).textContent = `${this.analytics.getNumberOfCompletedTodos()} / ${this.analytics.getNumberOfTotalTodos()}`;
   };
 }
