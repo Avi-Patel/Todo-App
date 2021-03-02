@@ -61,7 +61,6 @@ export const createMockServer = () => {
             "Opps!! Cannot update right now, plz try again after sometime"
           );
         }
-        console.log("completed");
       }),
 
     deleteTodoFromDatabase: (ids) =>

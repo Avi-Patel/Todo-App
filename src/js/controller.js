@@ -1,4 +1,5 @@
 import { checkWithFilters } from "./filter-checker-on-todo.js";
+import { commands } from "./consts.js";
 
 export class Controller {
   constructor(view, model) {
@@ -40,7 +41,7 @@ export class Controller {
     const filteredTodos = todos.filter((todo) =>
       checkWithFilters(todo, filterData)
     );
-    // console.log(filteredTodos);
+    this.view.analyticsUpdater.resetCounts();
     this.view.displayTodos(
       filteredTodos,
       currentlySelectedIds,
@@ -62,7 +63,6 @@ export class Controller {
   });
 
   handleAddTodo = (title, urgency, category) => {
-    // console.log(this.model.getCounter());
     const todo = this.createTodoObject({
       counter: this.model.getCounter(),
       title,
@@ -85,12 +85,12 @@ export class Controller {
   };
 
   handleEditTodo = (todo) => {
-    const index = this.model.getIndexInLocalData(todo.ID);
+    const index = this.model.getIndexInTodos(todo.ID);
     this.model.replaceTodoAtAnyIndex(index, todo);
   };
 
   handleAlteringCompletion = (id) => {
-    const index = this.model.getIndexInLocalData(id);
+    const index = this.model.getIndexInTodos(id);
     const todo = { ...this.model.getTodo(index) };
     todo.completed = !todo.completed;
     this.model.replaceTodoAtAnyIndex(index, todo);
@@ -128,62 +128,17 @@ export class Controller {
     const position = this.model.getPosition();
     const actions = this.model.getActions();
     if (position === -1) return;
-    // console.log(position);
+    console.log(position);
 
     switch (actions[position].command) {
       case commands.EDIT:
-        this.model.historyHandlers
-          .onEdit(
-            actions[position],
-            // actions[position]["IDs"][0],
-            // actions[position]["todos"][0],
-            // actions[position]["oldTodos"][0],
-            position,
-            true
-          )
-          .then((newPosition) => this.model.setPostion(newPosition));
-        break;
-      case commands.ALTER_COMPLETION_IN_BULK:
-        this.model.historyHandlers
-          .onAlterCompletionInBulk(
-            actions[position],
-            actions[position]["IDs"],
-            position,
-            true
-          )
-          .then((newPosition) => this.model.setPostion(newPosition));
+        this.model.onEdit(actions[position], true);
         break;
       case commands.CREATE:
-        this.model.historyHandlers
-          .onCreate(
-            actions[position],
-            actions[position]["IDs"][0],
-            position,
-            true
-          )
-          .then((newPosition) => this.model.setPostion(newPosition));
+        this.model.onCreate(actions[position], true);
         break;
       case commands.DELETE:
-        this.model.historyHandlers
-          .onDelete(
-            actions[position],
-            // actions[position]["IDs"][0],
-            // actions[position]["oldTodos"][0],
-            position,
-            true
-          )
-          .then((newPosition) => this.model.setPostion(newPosition));
-        break;
-      case commands.DELETE_IN_BULK:
-        this.model.historyHandlers
-          .onDeleteInBulk(
-            actions[position],
-            // actions[position]["IDs"],
-            // actions[position]["oldTodos"],
-            position,
-            true
-          )
-          .then((newPosition) => this.model.setPostion(newPosition));
+        this.model.onDelete(actions[position], true);
         break;
       default:
         break;
@@ -196,72 +151,16 @@ export class Controller {
     console.log(position);
     switch (actions[position + 1].command) {
       case commands.EDIT:
-        this.model.historyHandlers
-          .onEdit(
-            actions[position],
-            // actions[position + 1]["IDs"][0],
-            // actions[position + 1]["todos"][0],
-            // actions[position + 1]["oldTodos"][0],
-            position,
-            false
-          )
-          .then((newPosition) => this.model.setPostion(newPosition));
-        break;
-      case commands.ALTER_COMPLETION_IN_BULK:
-        this.model.historyHandlers
-          .onAlterCompletionInBulk(
-            actions[position],
-            // actions[position + 1]["IDs"],
-            position,
-            false
-          )
-          .then((newPosition) => this.model.setPostion(newPosition));
+        this.model.onEdit(actions[position + 1], false);
         break;
       case commands.CREATE:
-        this.model.historyHandlers
-          .onDelete(
-            actions[position],
-            // actions[position + 1]["IDs"][0],
-            // actions[position + 1]["todos"][0],
-            position,
-            false
-          )
-          .then((newPosition) => this.model.setPostion(newPosition));
-
+        this.model.onDelete(actions[position + 1], false);
         break;
       case commands.DELETE:
-        this.model.historyHandlers
-          .onCreate(
-            actions[position],
-            actions[position + 1]["IDs"][0],
-            position,
-            false
-          )
-          .then((newPosition) => this.model.setPostion(newPosition));
-        break;
-      case commands.DELETE_IN_BULK:
-        this.model.historyHandlers
-          .onDeleteInBulk(
-            actions[position],
-            // actions[position + 1]["IDs"],
-            // actions[position + 1]["oldTodos"],
-            position,
-            false
-          )
-          .then((newPosition) => this.model.setPostion(newPosition));
+        this.model.onCreate(actions[position + 1], false);
         break;
       default:
         break;
     }
   };
 }
-
-// updateHeaderDate,
-//   bindUndo,
-//   bindRedo,
-//   analyticsUpdater,
-//   displayTodos,
-//   bindAddTodo: createTodo.bindAddTodo,
-//   bindFilterUpdate: filterPanel.bindFilterUpdate,
-//   bindCheckBoxUpdate: filterPanel.bindCheckBoxUpdate,
-//   bindSearchBoxUpdate: filterPanel.bindSearchBoxUpdate,

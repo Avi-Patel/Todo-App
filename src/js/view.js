@@ -15,7 +15,7 @@ const bindUndo = (callback) => {
   window.addEventListener("keypress", (event) => {
     if (event.ctrlKey && event.key === "z") {
       console.log("undo event");
-      // this.todoActionHandlers.clearSelection();
+      debugger;
       callback();
     }
   });
@@ -25,7 +25,6 @@ const bindRedo = (callback) => {
   window.addEventListener("keypress", (event) => {
     if (event.ctrlKey && event.key === "r") {
       console.log("redo event");
-      // this.todoActionHandlers.clearSelection();
       callback();
     }
   });

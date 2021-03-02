@@ -1,6 +1,5 @@
 import { createMockServer } from "./Mock-Server.js";
 import { showSnackbar } from "./helper-functions.js";
-import { historyActionsHandlers } from "./history-actions-handlers.js";
 import { commands } from "./consts.js";
 
 export class Model {
@@ -17,15 +16,16 @@ export class Model {
     this.position = -1;
     this.actions = [];
     this.mockServer = createMockServer();
-    this.undoRedoHandlers = historyActionsHandlers(
-      [...this.allTodos],
-      this.mockServer,
-      this.stateChangeHandler
-    );
   }
 
   bindStateChangeHandler = (callback) => (this.stateChangeHandler = callback);
-
+  runStateChangeHandler = () => {
+    this.stateChangeHandler(
+      this.allTodos,
+      this.currentlySelected,
+      this.filterData
+    );
+  };
   getCounter = () => this.counter;
   setCounter = (newCounter) => (this.counter = newCounter);
 
@@ -36,7 +36,7 @@ export class Model {
 
   getTodo = (index) => this.allTodos[index];
 
-  getIndexInLocalData = (id) => {
+  getIndexInTodos = (id) => {
     let index;
     this.allTodos.forEach((todo, i) => {
       if (todo.ID === id) index = i;
@@ -46,11 +46,7 @@ export class Model {
 
   removeCurrentlySelectedIds = () => {
     this.currentlySelected = [];
-    this.stateChangeHandler(
-      this.allTodos,
-      this.currentlySelected,
-      this.filterData
-    );
+    this.runStateChangeHandler();
   };
 
   setCurrentlySelected = (newSelectedIds) =>
@@ -62,17 +58,30 @@ export class Model {
 
   emptyAllTodosArray = () => (this.allTodos.length = 0);
 
-  addActions = (commandType, todoIDs, todos, oldTodos) => {
+  findIndexToInsert = (id) => {
+    let index = this.allTodos.length;
+    this.allTodos.forEach((todo, i) => {
+      if (todo.ID > id && i > 0 && this.allTodos[i - 1].ID < id) {
+        index = i;
+      }
+    });
+    if (this.allTodos.length === 0 || id < this.allTodos[0].ID) {
+      index = 0;
+    }
+    return index;
+  };
+
+  addActions = (commandType, todoIds, todos, oldTodos) => {
     this.actions.splice(this.position + 1, this.actions.length);
     const newAction = {
       command: commandType,
-      IDs: todoIDs,
+      Ids: [...todoIds],
     };
     if (todos) {
-      newAction["todos"] = todos;
+      newAction["todos"] = [...todos];
     }
     if (oldTodos) {
-      newAction["oldTodos"] = oldTodos;
+      newAction["oldTodos"] = [...oldTodos];
     }
     this.actions.push(newAction);
     this.position++;
@@ -85,11 +94,7 @@ export class Model {
     } else {
       this.currentlySelected.splice(indexInSelected, 1);
     }
-    this.stateChangeHandler(
-      this.allTodos,
-      this.currentlySelected,
-      this.filterData
-    );
+    this.runStateChangeHandler();
   };
 
   updateFilter = (urgencyOrCategory, index) => {
@@ -98,33 +103,21 @@ export class Model {
     } else {
       this.filterData.categoryFilterMask[index] ^= 1;
     }
-    this.stateChangeHandler(
-      this.allTodos,
-      this.currentlySelected,
-      this.filterData
-    );
+    this.runStateChangeHandler();
   };
 
   updateCheckBoxStatus = (isChecked) => {
     const newFilterData = { ...this.filterData };
     newFilterData.notCompletedCheckBox = isChecked;
     this.filterData = newFilterData;
-    this.stateChangeHandler(
-      this.allTodos,
-      this.currentlySelected,
-      this.filterData
-    );
+    this.runStateChangeHandler();
   };
 
   updateSearchedInput = (newSearchedText) => {
     const newFilterData = { ...this.filterData };
     newFilterData.searchedText = newSearchedText;
     this.filterData = newFilterData;
-    this.stateChangeHandler(
-      this.allTodos,
-      this.currentlySelected,
-      this.filterData
-    );
+    this.runStateChangeHandler();
   };
 
   addTodo = (todo) => {
@@ -133,12 +126,8 @@ export class Model {
       .then(() => {
         this.allTodos = this.allTodos.concat(todo);
         this.setCounter(this.getCounter() + 1);
-        this.addActions(commands.CREATE, [todo.ID], [{ ...todo }]);
-        this.stateChangeHandler(
-          this.allTodos,
-          this.currentlySelected,
-          this.filterData
-        );
+        this.addActions(commands.CREATE, [todo.ID], [todo]);
+        this.runStateChangeHandler();
         // document.querySelector("#todo-title").value = "";
       })
       .catch((e) => {
@@ -150,18 +139,14 @@ export class Model {
     this.mockServer
       .deleteTodoFromDatabase([id])
       .then(() => {
-        const index = this.getIndexInLocalData(id);
+        const index = this.getIndexInTodos(id);
         this.addActions(commands.DELETE, [id], undefined, [
-          { ...localData.getTodo(index) },
+          this.allTodos[index],
         ]);
         this.allTodos = this.allTodos
           .slice(0, index)
           .concat(this.allTodos.slice(index + 1));
-        this.stateChangeHandler(
-          this.allTodos,
-          this.currentlySelected,
-          this.filterData
-        );
+        this.runStateChangeHandler();
       })
       .catch((e) => showSnackbar(e));
   };
@@ -170,27 +155,23 @@ export class Model {
     this.mockServer
       .updateTodoInDatabase([todo.ID], [todo])
       .then(() => {
-        this.allTodos = this.allTodos
-          .slice(0, index)
-          .concat({ ...todo }, this.allTodos.slice(index + 1));
         this.addActions(
           commands.EDIT,
           [todo.ID],
-          [{ ...returnedTodo }],
-          [{ ...todo }]
+          [todo],
+          [this.allTodos[index]]
         );
-        this.stateChangeHandler(
-          this.allTodos,
-          this.currentlySelected,
-          this.filterData
-        );
+        this.allTodos = this.allTodos
+          .slice(0, index)
+          .concat({ ...todo }, this.allTodos.slice(index + 1));
+        this.runStateChangeHandler();
       })
       .catch((e) => showSnackbar(e));
   };
 
   getTodosFromIdsForCompletion = () => {
     return this.currentlySelected.map((id) => {
-      const todo = { ...this.allTodos[this.getIndexInLocalData(id)] };
+      const todo = { ...this.allTodos[this.getIndexInTodos(id)] };
       todo.completed = !todo.completed;
       return todo;
     });
@@ -198,24 +179,25 @@ export class Model {
 
   toggleCompletionInBulk = () => {
     const todosForUpdation = this.getTodosFromIdsForCompletion();
+    const oldTodos = [];
     this.mockServer
       .updateTodoInDatabase(this.currentlySelected, todosForUpdation)
       .then(() => {
         this.currentlySelected.forEach((id, i) => {
-          const index = this.getIndexInLocalData(id);
+          const index = this.getIndexInTodos(id);
+          oldTodos.push(this.allTodos[index]);
           this.allTodos = this.allTodos
             .slice(0, index)
             .concat(todosForUpdation[i], this.allTodos.slice(index + 1));
         });
-        this.addActions(commands.ALTER_COMPLETION_IN_BULK, [
-          ...this.currentlySelected,
-        ]);
-        this.currentlySelected = [];
-        this.stateChangeHandler(
-          this.allTodos,
-          this.currentlySelected,
-          this.filterData
+        this.addActions(
+          commands.EDIT,
+          [this.currentlySelected],
+          [todosForUpdation],
+          [oldTodos]
         );
+        this.currentlySelected = [];
+        this.runStateChangeHandler();
       })
       .catch((e) => showSnackbar(e));
   };
@@ -227,21 +209,62 @@ export class Model {
         const deletedTodos = [];
         this.currentlySelected.forEach((id) => {
           deletedTodos.push({
-            ...this.allTodos.splice(this.getIndexInLocalData(id), 1),
+            ...this.allTodos.splice(this.getIndexInTodos(id), 1),
           });
         });
-        this.addActions(
-          commands.DELETE_IN_BULK,
-          [...this.currentlySelected],
-          undefined,
-          deletedTodos
-        );
+        this.addActions(commands.DELETE, [this.currentlySelected], undefined, [
+          deletedTodos,
+        ]);
         this.currentlySelected = [];
-        this.stateChangeHandler(
-          this.allTodos,
-          this.currentlySelected,
-          this.filterData
-        );
+        this.runStateChangeHandler();
+      })
+      .catch((e) => showSnackbar(e));
+  };
+
+  onCreate = (action, isUndo) => {
+    console.log("called");
+    this.mockServer
+      .deleteTodoFromDatabase(action.Ids)
+      .then(() => {
+        action.Ids.forEach((id) => {
+          this.allTodos.splice(this.getIndexInTodos(id));
+        });
+        isUndo ? this.position-- : this.position++;
+        this.runStateChangeHandler();
+      })
+      .catch((e) => showSnackbar(e));
+  };
+
+  onDelete = (action, isUndo) => {
+    const todosForToBeCreated = isUndo ? action["oldTodos"] : action["todos"];
+    this.mockServer
+      .createTodoInDatabase(todosForToBeCreated)
+      .then(() => {
+        todosForToBeCreated.forEach((todo, i) => {
+          const index = this.findIndexToInsert(action.Ids[i]);
+          this.allTodos = this.allTodos
+            .slice(0, index)
+            .concat(todo, this.allTodos.slice(index));
+        });
+        isUndo ? this.position-- : this.position++;
+        this.runStateChangeHandler();
+      })
+      .catch((e) => showSnackbar(e));
+  };
+
+  onEdit = (action, isUndo) => {
+    const todosForUpdation = isUndo ? action["oldTodos"] : action["todos"];
+    this.mockServer
+      .updateTodoInDatabase(action.Ids, todosForUpdation)
+      .then(() => {
+        action.Ids.forEach((id, i) => {
+          const index = this.getIndexInTodos(id);
+          this.allTodos = this.allTodos
+            .slice(0, index)
+            .concat(todosForUpdation[i], this.allTodos.slice(index + 1));
+        });
+        isUndo ? this.position-- : position++;
+        this.runStateChangeHandler();
       })
       .catch((e) => showSnackbar(e));
   };

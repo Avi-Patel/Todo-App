@@ -8,7 +8,7 @@ class Analytics {
   incrementNumberOfCompletedTodos = (value) =>
     (this.numberOfCompletedTodos += value);
 
-  incrementNumberOfTotalTodos = (value) => (this.numberOfTotalTodos = value);
+  incrementNumberOfTotalTodos = (value) => (this.numberOfTotalTodos += value);
 
   setNumberOfCompletedTodos = (numberOfCompletedTodos) =>
     (this.numberOfCompletedTodos = numberOfCompletedTodos);
@@ -29,6 +29,11 @@ export class AnalyticsUpdater {
       this.analytics.incrementNumberOfCompletedTodos(1);
     }
     this.analytics.incrementNumberOfTotalTodos(1);
+  };
+
+  resetCounts = () => {
+    this.analytics.setNumberOfCompletedTodos(0);
+    this.analytics.setNumberOfTotalTodos(0);
   };
 
   updateAnalyticsOnView = () => {
