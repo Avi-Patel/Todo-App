@@ -1,3 +1,3 @@
-import { TodoAppState } from "/src/js/AppState.js";
+import { TodoAppState } from "./js/AppState.js";
 
 const AppState = new TodoAppState();

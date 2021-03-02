@@ -53,7 +53,7 @@ export class Model {
   };
 
   setCurrentlySelected = (newSelectedIds) =>
-    (this.currentlySelected = [...newSelectedIds]); //
+    (this.currentlySelected = newSelectedIds);
 
   getCurrentlySelected = () => this.currentlySelected;
 
