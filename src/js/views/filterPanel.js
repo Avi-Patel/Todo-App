@@ -1,7 +1,7 @@
-import { urgency, category } from "../consts.js";
+import { urgency, category, filterNames } from "../consts.js";
 import { extractClosestNodeFromPath } from "../helper-functions.js";
 
-const findUrgencyTargetBtn = (event, callback) => {
+const findFilterTypeAndLevel = (event) => {
   const targetButton =
     event.target.tagName === "BUTTON"
       ? event.target
@@ -12,30 +12,28 @@ const findUrgencyTargetBtn = (event, callback) => {
   switch (targetButton.id) {
     case urgency.LOW:
       targetButton.classList.toggle("filter-btn-selected");
-      callback("urgency", 0);
-      break;
+      return [filterNames.URGENCY, urgency.LOW];
+
     case urgency.MEDIUM:
       targetButton.classList.toggle("filter-btn-selected");
-      callback("urgency", 1);
-      break;
+      return [filterNames.URGENCY, urgency.MEDIUM];
+
     case urgency.HIGH:
       targetButton.classList.toggle("filter-btn-selected");
-      callback("urgency", 2);
-      break;
+      return [filterNames.URGENCY, urgency.HIGH];
+
     case category.PERSONAL:
       targetButton.classList.toggle("filter-btn-selected");
-      callback("category", 0);
-      break;
+      return [filterNames.CATEGORY, category.PERSONAL];
+
     case category.ACADEMIC:
       targetButton.classList.toggle("filter-btn-selected");
-      callback("category", 1);
-      break;
+      return [filterNames.CATEGORY, category.ACADEMIC];
+
     case category.SOCIAL:
       targetButton.classList.toggle("filter-btn-selected");
-      callback("category", 2);
-      break;
+      return [filterNames.CATEGORY, category.SOCIAL];
     default:
-      break;
   }
 };
 
@@ -43,12 +41,12 @@ const bindFilterUpdate = (callback) => {
   document
     .querySelector("#urgency-filter")
     .addEventListener("click", (event) =>
-      findUrgencyTargetBtn(event, callback)
+      callback(findFilterTypeAndLevel(event))
     );
   document
     .querySelector("#category-filter")
     .addEventListener("click", (event) =>
-      findUrgencyTargetBtn(event, callback)
+      callback(findFilterTypeAndLevel(event))
     );
 };
 

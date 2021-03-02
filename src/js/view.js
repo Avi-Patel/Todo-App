@@ -15,7 +15,6 @@ const bindUndo = (callback) => {
   window.addEventListener("keypress", (event) => {
     if (event.ctrlKey && event.key === "z") {
       console.log("undo event");
-      debugger;
       callback();
     }
   });

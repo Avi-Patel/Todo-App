@@ -1,23 +1,16 @@
-//analytics manage the data about #totaltodos and #completed todos which are their on view at any time.
+//analytics manage the data about #totaltodos and #completed todos which are shown on the view.
 class Analytics {
   constructor() {
-    this.numberOfCompletedTodos = 0;
-    this.numberOfTotalTodos = 0;
+    this.completedTodos = 0;
+    this.totalTodos = 0;
   }
+  setCompletedTodos = (completedTodos) =>
+    (this.completedTodos = completedTodos); //
 
-  incrementNumberOfCompletedTodos = (value) =>
-    (this.numberOfCompletedTodos += value);
+  setTotalTodos = (totalTodos) => (this.totalTodos = totalTodos);
 
-  incrementNumberOfTotalTodos = (value) => (this.numberOfTotalTodos += value);
-
-  setNumberOfCompletedTodos = (numberOfCompletedTodos) =>
-    (this.numberOfCompletedTodos = numberOfCompletedTodos);
-
-  setNumberOfTotalTodos = (numberOfTotalTodos) =>
-    (this.numberOfTotalTodos = numberOfTotalTodos);
-
-  getNumberOfCompletedTodos = () => this.numberOfCompletedTodos;
-  getNumberOfTotalTodos = () => this.numberOfTotalTodos;
+  getCompletedTodos = () => this.completedTodos;
+  getTotalTodos = () => this.totalTodos;
 }
 
 export class AnalyticsUpdater {
@@ -26,27 +19,27 @@ export class AnalyticsUpdater {
   }
   updateCounts = (todo) => {
     if (todo.completed) {
-      this.analytics.incrementNumberOfCompletedTodos(1);
+      this.analytics.setCompletedTodos(this.analytics.getCompletedTodos() + 1);
     }
-    this.analytics.incrementNumberOfTotalTodos(1);
+    this.analytics.setTotalTodos(this.analytics.getTotalTodos() + 1);
   };
 
   resetCounts = () => {
-    this.analytics.setNumberOfCompletedTodos(0);
-    this.analytics.setNumberOfTotalTodos(0);
+    this.analytics.setCompletedTodos(0);
+    this.analytics.setTotalTodos(0);
   };
 
   updateAnalyticsOnView = () => {
     document.querySelector("#percentage-text").textContent =
-      this.analytics.getNumberOfCompletedTodos() === 0
+      this.analytics.getCompletedTodos() === 0
         ? "0 %"
         : Math.round(
-            (this.analytics.getNumberOfCompletedTodos() /
-              this.analytics.getNumberOfTotalTodos()) *
+            (this.analytics.getCompletedTodos() /
+              this.analytics.getTotalTodos()) *
               100
           ) + " %";
     document.querySelector(
       "#ratio-text"
-    ).textContent = `${this.analytics.getNumberOfCompletedTodos()} / ${this.analytics.getNumberOfTotalTodos()}`;
+    ).textContent = `${this.analytics.getCompletedTodos()} / ${this.analytics.getTotalTodos()}`;
   };
 }

@@ -1,11 +1,11 @@
-import { checkWithFilters } from "./filter-checker-on-todo.js";
-import { commands } from "./consts.js";
+import { validateTodo } from "./filterValidationOnTodo.js";
+import { todoActions, urgency, category } from "./consts.js";
 
 export class Controller {
   constructor(view, model) {
     this.model = model;
     this.view = view;
-    // console.log(this.view);
+
     this.view.updateHeaderDate();
     this.view.bindUndo(this.handleUndo);
     this.view.bindRedo(this.handleRedo);
@@ -14,16 +14,14 @@ export class Controller {
     this.view.bindCheckBoxUpdate(this.handleCheckBoxUpdate);
     this.view.bindSearchBoxUpdate(this.handleSearchBoxUpdate);
     this.view.bindClearSearchBtn();
-    this.view.bindToggleCompletionOfSelection(
-      this.handleTogglingOfCompletionOfSelection
-    );
-    this.view.bindClearSelection(this.handleClearSelection);
-    this.view.bindDeleteSelectedTodos(this.handleDelectionOfSelectedTodods);
+    this.view.bindToggleCompletionOfSelection(this.toggleCompletionOfSelection);
+    this.view.bindClearSelection(this.clearSelection);
+    this.view.bindDeleteSelectedTodos(this.deleteSelectedTodos);
 
     this.model.bindStateChangeHandler(this.render);
 
     this.callbacksForTodo = {
-      handleAlteringCompletion: this.handleAlteringCompletion,
+      handleTodoToggle: this.handleTodoToggle,
       handleTogglingFromSelected: this.handleTogglingFromSelected,
       handleDeleteTodo: this.handleDeleteTodo,
       handleEditTodo: this.handleEditTodo,
@@ -37,10 +35,10 @@ export class Controller {
   }
 
   render = (todos, currentlySelectedIds, filterData) => {
-    console.log(this.callbacksForTodo);
     const filteredTodos = todos.filter((todo) =>
-      checkWithFilters(todo, filterData)
+      validateTodo(todo, filterData)
     );
+    // console.log(filteredTodos);
     this.view.analyticsUpdater.resetCounts();
     this.view.displayTodos(
       filteredTodos,
@@ -53,14 +51,23 @@ export class Controller {
     this.view.analyticsUpdater.updateAnalyticsOnView();
   };
 
-  createTodoObject = ({ counter, title, urgency, category }) => ({
-    ID: counter,
-    date: new Date().toLocaleString(),
-    title: title,
-    urgency: urgency,
-    category: category,
-    completed: false,
-  });
+  createTodoObject = ({ counter, title, urgency, category }) => {
+    if (!urgency) {
+      urgency = 0;
+    }
+    if (!category) {
+      category = 0;
+    }
+
+    return {
+      ID: counter,
+      date: new Date().toLocaleString(),
+      title: title,
+      urgency: urgency,
+      category: category,
+      completed: false,
+    };
+  };
 
   handleAddTodo = (title, urgency, category) => {
     const todo = this.createTodoObject({
@@ -72,7 +79,14 @@ export class Controller {
     this.model.addTodo(todo);
   };
 
-  handleFilterUpdate = (urgencyOrCategory, index) => {
+  handleFilterUpdate = (urgencyOrCategory, level) => {
+    let index = 0;
+    if (level === urgency.MEDIUM || level === category.ACADEMIC) {
+      index = 1;
+    }
+    if (level == urgency.HIGH || level === category.SOCIAL) {
+      index = 2;
+    }
     this.model.updateFilter(urgencyOrCategory, index);
   };
 
@@ -85,15 +99,15 @@ export class Controller {
   };
 
   handleEditTodo = (todo) => {
-    const index = this.model.getIndexInTodos(todo.ID);
+    const index = this.model.findIndexById(todo.ID);
     this.model.replaceTodoAtAnyIndex(index, todo);
   };
 
-  handleAlteringCompletion = (id) => {
-    const index = this.model.getIndexInTodos(id);
-    const todo = { ...this.model.getTodo(index) };
-    todo.completed = !todo.completed;
-    this.model.replaceTodoAtAnyIndex(index, todo);
+  handleTodoToggle = (id) => {
+    const index = this.model.findIndexById(id);
+    const todoAtIndex = this.model.getTodo(index);
+    const updatedTodo = { ...todoAtIndex, completed: !todoAtIndex.completed };
+    this.model.replaceTodoAtAnyIndex(index, updatedTodo);
   };
 
   handleTogglingFromSelected = (id) => {
@@ -104,7 +118,7 @@ export class Controller {
     this.model.deleteTodo(id);
   };
 
-  handleTogglingOfCompletionOfSelection = () => {
+  toggleCompletionOfSelection = () => {
     if (this.model.getCurrentlySelected().length === 0) {
       return true;
     } else {
@@ -112,11 +126,11 @@ export class Controller {
     }
   };
 
-  handleClearSelection = () => {
+  clearSelection = () => {
     this.model.removeCurrentlySelectedIds();
   };
 
-  handleDelectionOfSelectedTodods = () => {
+  deleteSelectedTodos = () => {
     if (this.model.getCurrentlySelected().length === 0) {
       return true;
     } else {
@@ -127,17 +141,20 @@ export class Controller {
   handleUndo = () => {
     const position = this.model.getPosition();
     const actions = this.model.getActions();
-    if (position === -1) return;
+    console.log(actions);
+    if (position === -1) {
+      return;
+    }
     console.log(position);
 
     switch (actions[position].command) {
-      case commands.EDIT:
+      case todoActions.EDIT:
         this.model.onEdit(actions[position], true);
         break;
-      case commands.CREATE:
+      case todoActions.CREATE:
         this.model.onCreate(actions[position], true);
         break;
-      case commands.DELETE:
+      case todoActions.DELETE:
         this.model.onDelete(actions[position], true);
         break;
       default:
@@ -147,16 +164,18 @@ export class Controller {
   handleRedo = () => {
     const position = this.model.getPosition();
     const actions = this.model.getActions();
-    if (position === actions.length - 1) return;
+    if (position === actions.length - 1) {
+      return;
+    }
     console.log(position);
     switch (actions[position + 1].command) {
-      case commands.EDIT:
+      case todoActions.EDIT:
         this.model.onEdit(actions[position + 1], false);
         break;
-      case commands.CREATE:
+      case todoActions.CREATE:
         this.model.onDelete(actions[position + 1], false);
         break;
-      case commands.DELETE:
+      case todoActions.DELETE:
         this.model.onCreate(actions[position + 1], false);
         break;
       default:

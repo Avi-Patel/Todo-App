@@ -1,5 +1,5 @@
-import { commands, color, categoryIcon } from "../consts.js";
-import { showModal } from "./create-modal.js";
+import { todoActions, color, categoryIcon } from "../consts.js";
+import { showModal } from "./createModal.js";
 import { extractClosestNodeFromPath } from "../helper-functions.js";
 
 const createTodoNode = (todo, callbacks) => {
@@ -56,21 +56,18 @@ const addListenerForTodoNode = (todoNode, todo, callbacks) => {
     if (!targetButton) return;
 
     const id = parseInt(todoNode.dataset.id);
-    // console.log(targetButton.dataset.type, commands.MARK_COMPLETED);
     switch (targetButton.dataset.type) {
-      case commands.MARK_COMPLETED:
-        callbacks.handleAlteringCompletion(id);
+      case todoActions.MARK_COMPLETED:
+        callbacks.handleTodoToggle(id);
         break;
-      case commands.SELECT:
+      case todoActions.SELECT:
         callbacks.handleTogglingFromSelected(id);
         break;
-      case commands.DELETE:
+      case todoActions.DELETE:
         callbacks.handleDeleteTodo(id);
-        // localData.emptyCurrentSelectedArray();
         break;
-      case commands.EDIT:
+      case todoActions.EDIT:
         showModal(todo, callbacks.handleEditTodo);
-        // localData.emptyCurrentSelectedArray();
         break;
       default:
         break;
@@ -79,20 +76,15 @@ const addListenerForTodoNode = (todoNode, todo, callbacks) => {
 };
 
 export const displayTodos = (todos, currentlySelectedIds, callbacks) => {
-  console.log(currentlySelectedIds);
-  console.log(callbacks);
   document.querySelector("#todos-box").innerHTML = "";
 
   todos.forEach((todo) => {
     const newtodoNode = createTodoNode(todo, callbacks);
     if (currentlySelectedIds.indexOf(todo.ID) !== -1) {
       newtodoNode
-        .querySelector(`[data-type=${commands.SELECT}]`)
+        .querySelector(`[data-type=${todoActions.SELECT}]`)
         .classList.toggle("blueCircle");
     }
     document.querySelector("#todos-box").appendChild(newtodoNode);
   });
-  // this.localData.emptyCurrentSelectedArray();
-  // this.setAnalytics(numberOfCompletedTodos, numberOfTotalTodos);
-  // this.analyticsUpdater.updateAnalyticsOnView();
 };

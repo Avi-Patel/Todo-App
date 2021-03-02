@@ -1,6 +1,6 @@
 import { createMockServer } from "./Mock-Server.js";
 import { showSnackbar } from "./helper-functions.js";
-import { commands } from "./consts.js";
+import { todoActions } from "./consts.js";
 
 export class Model {
   constructor() {
@@ -8,8 +8,8 @@ export class Model {
     this.currentlySelected = [];
     this.counter = 0;
     this.filterData = {
-      urgencyFilterMask: [0, 0, 0],
-      categoryFilterMask: [0, 0, 0],
+      urgencyFilterMask: Array(3).fill(false), // true/false
+      categoryFilterMask: Array(3).fill(false),
       notCompletedCheckBox: false,
       searchedText: "",
     };
@@ -26,6 +26,9 @@ export class Model {
       this.filterData
     );
   };
+
+  //utilities for accessing model data
+
   getCounter = () => this.counter;
   setCounter = (newCounter) => (this.counter = newCounter);
 
@@ -36,7 +39,7 @@ export class Model {
 
   getTodo = (index) => this.allTodos[index];
 
-  getIndexInTodos = (id) => {
+  findIndexById = (id) => {
     let index;
     this.allTodos.forEach((todo, i) => {
       if (todo.ID === id) index = i;
@@ -50,7 +53,7 @@ export class Model {
   };
 
   setCurrentlySelected = (newSelectedIds) =>
-    (this.currentlySelected = [...newSelectedIds]);
+    (this.currentlySelected = [...newSelectedIds]); //
 
   getCurrentlySelected = () => this.currentlySelected;
 
@@ -71,22 +74,24 @@ export class Model {
     return index;
   };
 
+  //adding actions done on todd to history
   addActions = (commandType, todoIds, todos, oldTodos) => {
-    this.actions.splice(this.position + 1, this.actions.length);
+    this.actions = this.actions.slice(0, this.position + 1);
     const newAction = {
       command: commandType,
-      Ids: [...todoIds],
+      Ids: todoIds,
     };
     if (todos) {
-      newAction["todos"] = [...todos];
+      newAction["todos"] = todos;
     }
     if (oldTodos) {
-      newAction["oldTodos"] = [...oldTodos];
+      newAction["oldTodos"] = oldTodos;
     }
-    this.actions.push(newAction);
+    this.actions = this.actions.concat(newAction);
     this.position++;
   };
 
+  // handlers for actions on todo
   toggleIdFromSelected = (id) => {
     const indexInSelected = this.currentlySelected.indexOf(id);
     if (indexInSelected === -1) {
@@ -99,24 +104,25 @@ export class Model {
 
   updateFilter = (urgencyOrCategory, index) => {
     if (urgencyOrCategory === "urgency") {
-      this.filterData.urgencyFilterMask[index] ^= 1;
+      const urgencyFilterMask = this.filterData.urgencyFilterMask;
+      urgencyFilterMask[index] = !urgencyFilterMask[index];
+      this.filterData = { ...this.filterData, urgencyFilterMask };
     } else {
-      this.filterData.categoryFilterMask[index] ^= 1;
+      const categoryFilterMask = this.filterData.categoryFilterMask;
+      categoryFilterMask[index] = !categoryFilterMask[index];
+      this.filterData = { ...this.filterData, categoryFilterMask };
     }
     this.runStateChangeHandler();
   };
 
   updateCheckBoxStatus = (isChecked) => {
-    const newFilterData = { ...this.filterData };
-    newFilterData.notCompletedCheckBox = isChecked;
-    this.filterData = newFilterData;
+    this.filterData = { ...this.filterData, notCompletedCheckBox: isChecked };
     this.runStateChangeHandler();
   };
 
   updateSearchedInput = (newSearchedText) => {
-    const newFilterData = { ...this.filterData };
-    newFilterData.searchedText = newSearchedText;
-    this.filterData = newFilterData;
+    //
+    this.filterData = { ...this.filterData, searchedText: newSearchedText };
     this.runStateChangeHandler();
   };
 
@@ -126,9 +132,8 @@ export class Model {
       .then(() => {
         this.allTodos = this.allTodos.concat(todo);
         this.setCounter(this.getCounter() + 1);
-        this.addActions(commands.CREATE, [todo.ID], [todo]);
+        this.addActions(todoActions.CREATE, [todo.ID], [todo]);
         this.runStateChangeHandler();
-        // document.querySelector("#todo-title").value = "";
       })
       .catch((e) => {
         showSnackbar(e);
@@ -139,8 +144,8 @@ export class Model {
     this.mockServer
       .deleteTodoFromDatabase([id])
       .then(() => {
-        const index = this.getIndexInTodos(id);
-        this.addActions(commands.DELETE, [id], undefined, [
+        const index = this.findIndexById(id);
+        this.addActions(todoActions.DELETE, [id], undefined, [
           this.allTodos[index],
         ]);
         this.allTodos = this.allTodos
@@ -156,7 +161,7 @@ export class Model {
       .updateTodoInDatabase([todo.ID], [todo])
       .then(() => {
         this.addActions(
-          commands.EDIT,
+          todoActions.EDIT,
           [todo.ID],
           [todo],
           [this.allTodos[index]]
@@ -171,9 +176,9 @@ export class Model {
 
   getTodosFromIdsForCompletion = () => {
     return this.currentlySelected.map((id) => {
-      const todo = { ...this.allTodos[this.getIndexInTodos(id)] };
-      todo.completed = !todo.completed;
-      return todo;
+      const todo = this.allTodos[this.findIndexById(id)];
+      const updatedTodo = { ...todo, completed: !todo.completed };
+      return updatedTodo;
     });
   };
 
@@ -184,17 +189,17 @@ export class Model {
       .updateTodoInDatabase(this.currentlySelected, todosForUpdation)
       .then(() => {
         this.currentlySelected.forEach((id, i) => {
-          const index = this.getIndexInTodos(id);
-          oldTodos.push(this.allTodos[index]);
+          const index = this.findIndexById(id);
+          oldTodos.push({ ...this.allTodos[index] });
           this.allTodos = this.allTodos
             .slice(0, index)
             .concat(todosForUpdation[i], this.allTodos.slice(index + 1));
         });
         this.addActions(
-          commands.EDIT,
-          [this.currentlySelected],
-          [todosForUpdation],
-          [oldTodos]
+          todoActions.EDIT,
+          [...this.currentlySelected],
+          todosForUpdation,
+          oldTodos
         );
         this.currentlySelected = [];
         this.runStateChangeHandler();
@@ -209,25 +214,30 @@ export class Model {
         const deletedTodos = [];
         this.currentlySelected.forEach((id) => {
           deletedTodos.push({
-            ...this.allTodos.splice(this.getIndexInTodos(id), 1),
+            ...this.allTodos[this.findIndexById(id)],
           });
+          this.allTodos.splice(this.findIndexById(id), 1);
         });
-        this.addActions(commands.DELETE, [this.currentlySelected], undefined, [
-          deletedTodos,
-        ]);
+        console.log(deletedTodos);
+        this.addActions(
+          todoActions.DELETE,
+          [...this.currentlySelected],
+          undefined,
+          deletedTodos
+        );
         this.currentlySelected = [];
         this.runStateChangeHandler();
       })
       .catch((e) => showSnackbar(e));
   };
 
+  // undo redo handlers for perticular action stored in history content.
   onCreate = (action, isUndo) => {
-    console.log("called");
     this.mockServer
       .deleteTodoFromDatabase(action.Ids)
       .then(() => {
         action.Ids.forEach((id) => {
-          this.allTodos.splice(this.getIndexInTodos(id));
+          this.allTodos.splice(this.findIndexById(id));
         });
         isUndo ? this.position-- : this.position++;
         this.runStateChangeHandler();
@@ -236,6 +246,7 @@ export class Model {
   };
 
   onDelete = (action, isUndo) => {
+    console.log(action);
     const todosForToBeCreated = isUndo ? action["oldTodos"] : action["todos"];
     this.mockServer
       .createTodoInDatabase(todosForToBeCreated)
@@ -258,12 +269,12 @@ export class Model {
       .updateTodoInDatabase(action.Ids, todosForUpdation)
       .then(() => {
         action.Ids.forEach((id, i) => {
-          const index = this.getIndexInTodos(id);
+          const index = this.findIndexById(id);
           this.allTodos = this.allTodos
             .slice(0, index)
             .concat(todosForUpdation[i], this.allTodos.slice(index + 1));
         });
-        isUndo ? this.position-- : position++;
+        isUndo ? this.position-- : this.position++;
         this.runStateChangeHandler();
       })
       .catch((e) => showSnackbar(e));

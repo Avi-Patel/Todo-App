@@ -1,4 +1,5 @@
-export const commands = {
+export const todoActions = {
+  //
   EDIT: "edit",
   ALTER_COMPLETION_IN_BULK: "alterCompletionInBulk",
   CREATE: "create",
@@ -21,12 +22,17 @@ export const color = {
 };
 
 export const category = {
-  PERSONAL: "personalCategory",
-  ACADEMIC: "academicCategory",
-  SOCIAL: "socialCategory",
+  PERSONAL: "personal",
+  ACADEMIC: "academic",
+  SOCIAL: "social",
 };
 export const urgency = {
-  LOW: "lowUrgency",
-  MEDIUM: "mediumUrgency",
-  HIGH: "highUrgency",
+  LOW: "low",
+  MEDIUM: "medium",
+  HIGH: "high",
+};
+
+export const filterNames = {
+  URGENCY: "urgency",
+  CATEGORY: "category",
 };

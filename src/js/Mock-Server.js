@@ -76,45 +76,5 @@ export const createMockServer = () => {
           );
         }
       }),
-
-    // bulkUpdateInDatabase: (ids, updatedTodos) =>
-    //   new Promise((resolve, reject) => {
-    //     if (randomBooleanValue()) {
-    //       ids.forEach((id, i) => {
-    //         todos[getIndexInDatabase(id)] = { ...updatedTodos[i] };
-    //       });
-    //       resolve();
-    //     } else {
-    //       reject(
-    //         "Opps!! Cannot update right now, plz try again after sometime"
-    //       );
-    //     }
-    //   }),
-
-    // bulkDeleteFromDatabase: (ids) =>
-    //   new Promise((resolve, reject) => {
-    //     if (randomBooleanValue()) {
-    //       ids.forEach((id) => {
-    //         todos.splice(getIndexInDatabase(id), 1);
-    //       });
-    //       resolve();
-    //     } else {
-    //       reject(
-    //         "Opps!! something went wrong while deletign TODOs, plz try again after sometime"
-    //       );
-    //     }
-    //   }),
-
-    // bulkCreateInDatabase: (newTodods) =>
-    //   new Promise((resolve, reject) => {
-    //     if (randomBooleanValue()) {
-    //       newTodods.forEach((newTodo) => todos.push({ ...newTodo }));
-    //       resolve();
-    //     } else {
-    //       reject(
-    //         "Opps!! something went wrong server side, plz try again after sometime"
-    //       );
-    //     }
-    //   }),
   };
 };

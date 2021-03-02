@@ -1,4 +1,4 @@
-const collectInputFromDOM = (event, callback) => {
+const collectTodoInputsFromDOM = (callback) => {
   const title = document.querySelector("#todo-title");
   const urgency = document.querySelector("#urgency-input");
   const category = document.querySelector("#category-input");
@@ -13,7 +13,7 @@ const collectInputFromDOM = (event, callback) => {
 const bindAddTodo = (callback) => {
   document
     .querySelector("#todo-add-btn")
-    .addEventListener("click", (event) => collectInputFromDOM(event, callback));
+    .addEventListener("click", (event) => collectTodoInputsFromDOM(callback));
 };
 
 export default {
