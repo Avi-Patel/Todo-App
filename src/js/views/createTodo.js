@@ -4,7 +4,7 @@ const collectTodoInputsFromDOM = (callback) => {
   const category = document.querySelector("#category-input");
 
   if (title.value.trim() !== "") {
-    callback(title.value, urgency.selectedIndex, category.selectedIndex);
+    callback(title.value, urgency.value, category.value);
   }
 
   title.value = "";

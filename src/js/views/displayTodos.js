@@ -1,14 +1,24 @@
-import { todoActions, color, categoryIcon } from "../consts.js";
+import {
+  todoActions,
+  color,
+  categoryIcon,
+  urgency,
+  category,
+} from "../constants.js";
 import { showModal } from "./createModal.js";
 import { extractClosestNodeFromPath } from "../helper-functions.js";
 
 const createTodoNode = (todo, callbacks) => {
-  const urgencyIconColors = [color.GREEN, color.YELLOW, color.RED];
-  const categoryIcons = [
-    categoryIcon.USERALT,
-    categoryIcon.BOOKOPEN,
-    categoryIcon.USERS,
-  ];
+  const urgencyIconColors = {
+    [urgency.LOW]: color.GREEN,
+    [urgency.MEDIUM]: color.YELLOW,
+    [urgency.HIGH]: color.RED,
+  };
+  const categoryIcons = {
+    [category.PERSONAL]: categoryIcon.USERALT,
+    [category.ACADEMIC]: categoryIcon.BOOKOPEN,
+    [category.SOCIAL]: categoryIcon.USERS,
+  };
   const todoNode = document.createElement("div");
   todoNode.classList.add(
     "TDitem",
@@ -58,10 +68,10 @@ const addListenerForTodoNode = (todoNode, todo, callbacks) => {
     const id = parseInt(todoNode.dataset.id);
     switch (targetButton.dataset.type) {
       case todoActions.MARK_COMPLETED:
-        callbacks.handleTodoToggle(id);
+        callbacks.handleCompletionToggle(id);
         break;
       case todoActions.SELECT:
-        callbacks.handleTogglingFromSelected(id);
+        callbacks.handleSelectionToggle(id);
         break;
       case todoActions.DELETE:
         callbacks.handleDeleteTodo(id);

@@ -2,17 +2,17 @@ const addListenerToModalUpdateBtn = (btnID, todo, updateModal, callback) => {
   const updateBtn = document.querySelector(`#${btnID}`);
   updateBtn.addEventListener("click", () => {
     const updatedTitle = updateModal.querySelector("#update-todo-title").value;
+    const updatedUrgency = updateModal.querySelector("#updated-urgency").value;
+    const updatedCategory = updateModal.querySelector("#updated-category")
+      .value;
 
     if (updatedTitle.trim() !== "") {
-      const updatedTodo = { ...todo };
-      updatedTodo.title = updatedTitle;
-      updatedTodo.urgency = updateModal.querySelector(
-        "#updated-urgency"
-      ).selectedIndex;
-      updatedTodo.category = updateModal.querySelector(
-        "#updated-category"
-      ).selectedIndex;
-
+      const updatedTodo = {
+        ...todo,
+        title: updatedTitle,
+        urgency: updatedUrgency,
+        category: updatedCategory,
+      };
       callback(updatedTodo);
       updateModal.remove();
     }
@@ -24,9 +24,7 @@ const addListenerToModalCancelBtn = (btnID, updateModal) => {
   cancelBtn.addEventListener("click", () => updateModal.remove());
 };
 
-const createModal = (title, urgencyIndex, categoryIndex) => {
-  const urgency = ["low", "medium", "high"];
-  const category = ["personal", "academic", "social"];
+const createModal = (title, urgency, category) => {
   const updateModal = document.createElement("div");
   updateModal.classList.add("updateModal");
 
@@ -43,7 +41,7 @@ const createModal = (title, urgencyIndex, categoryIndex) => {
       name="urgency"
       id="updated-urgency"
       class="updateModalPreference mar10 pad12"
-      value="${category[urgencyIndex]}">
+      value="${urgency}">
       <option value="low" class="attribute">Low</option>
       <option value="medium" class="attribute">Medium</option>
       <option value="high" class="attribute">High</option>
@@ -53,7 +51,7 @@ const createModal = (title, urgencyIndex, categoryIndex) => {
       name="category"
       id="updated-category"
       class="updateModalPreference mar10 pad12"
-      value="${urgency[categoryIndex]}">
+      value="${category}">
       <option value="personal" class="attribute">Personal</option>
       <option value="academic" class="attribute">Academic</option>
       <option value="social" class="attribute">Social</option>
@@ -69,8 +67,8 @@ const createModal = (title, urgencyIndex, categoryIndex) => {
 
 export const showModal = (todo, callback) => {
   const updateModal = createModal(todo.title, todo.urgency, todo.category);
-  updateModal.querySelector("#updated-urgency").selectedIndex = todo.urgency;
-  updateModal.querySelector("#updated-category").selectedIndex = todo.category;
+  updateModal.querySelector("#updated-urgency").value = todo.urgency;
+  updateModal.querySelector("#updated-category").value = todo.category;
   document.body.appendChild(updateModal);
 
   addListenerToModalUpdateBtn("updateTodoBtn", todo, updateModal, callback);

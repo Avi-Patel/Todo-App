@@ -1,5 +1,10 @@
-import { validateTodo } from "./filterValidationOnTodo.js";
-import { todoActions, urgency, category } from "./consts.js";
+import { validateTodoForFilter } from "./filterValidationOnTodo.js";
+import {
+  todoActions,
+  urgency,
+  category,
+  INVALID_POSITION,
+} from "./constants.js";
 
 export class Controller {
   constructor(view, model) {
@@ -14,15 +19,15 @@ export class Controller {
     this.view.bindCheckBoxUpdate(this.handleCheckBoxUpdate);
     this.view.bindSearchBoxUpdate(this.handleSearchBoxUpdate);
     this.view.bindClearSearchBtn();
-    this.view.bindToggleCompletionOfSelection(this.toggleCompletionOfSelection);
+    this.view.bindToggleCompletionOfSelection(this.toggleBulkCompletion);
     this.view.bindClearSelection(this.clearSelection);
     this.view.bindDeleteSelectedTodos(this.deleteSelectedTodos);
 
     this.model.bindStateChangeHandler(this.render);
 
     this.callbacksForTodo = {
-      handleTodoToggle: this.handleTodoToggle,
-      handleTogglingFromSelected: this.handleTogglingFromSelected,
+      handleCompletionToggle: this.handleCompletionToggle,
+      handleSelectionToggle: this.handleSelectionToggle,
       handleDeleteTodo: this.handleDeleteTodo,
       handleEditTodo: this.handleEditTodo,
     };
@@ -36,7 +41,7 @@ export class Controller {
 
   render = (todos, currentlySelectedIds, filterData) => {
     const filteredTodos = todos.filter((todo) =>
-      validateTodo(todo, filterData)
+      validateTodoForFilter(todo, filterData)
     );
     // console.log(filteredTodos);
     this.view.analyticsUpdater.resetCounts();
@@ -52,13 +57,6 @@ export class Controller {
   };
 
   createTodoObject = ({ counter, title, urgency, category }) => {
-    if (!urgency) {
-      urgency = 0;
-    }
-    if (!category) {
-      category = 0;
-    }
-
     return {
       ID: counter,
       date: new Date().toLocaleString(),
@@ -69,7 +67,11 @@ export class Controller {
     };
   };
 
-  handleAddTodo = (title, urgency, category) => {
+  handleAddTodo = (
+    title,
+    urgency = urgency.LOW,
+    category = category.PERSONAL
+  ) => {
     const todo = this.createTodoObject({
       counter: this.model.getCounter(),
       title,
@@ -79,15 +81,9 @@ export class Controller {
     this.model.addTodo(todo);
   };
 
-  handleFilterUpdate = (urgencyOrCategory, level) => {
-    let index = 0;
-    if (level === urgency.MEDIUM || level === category.ACADEMIC) {
-      index = 1;
-    }
-    if (level == urgency.HIGH || level === category.SOCIAL) {
-      index = 2;
-    }
-    this.model.updateFilter(urgencyOrCategory, index);
+  handleFilterUpdate = ({ urgencyOrCategory, type }) => {
+    console.log(urgencyOrCategory, type);
+    this.model.updateFilter(urgencyOrCategory, type);
   };
 
   handleCheckBoxUpdate = (isChecked) => {
@@ -98,19 +94,18 @@ export class Controller {
     this.model.updateSearchedInput(searchInput);
   };
 
-  handleEditTodo = (todo) => {
-    const index = this.model.findIndexById(todo.ID);
-    this.model.replaceTodoAtAnyIndex(index, todo);
+  handleEditTodo = (updatedTodo) => {
+    this.model.updateTodo(updatedTodo);
   };
 
-  handleTodoToggle = (id) => {
+  handleCompletionToggle = (id) => {
     const index = this.model.findIndexById(id);
     const todoAtIndex = this.model.getTodo(index);
     const updatedTodo = { ...todoAtIndex, completed: !todoAtIndex.completed };
-    this.model.replaceTodoAtAnyIndex(index, updatedTodo);
+    this.model.updateTodo(updatedTodo);
   };
 
-  handleTogglingFromSelected = (id) => {
+  handleSelectionToggle = (id) => {
     this.model.toggleIdFromSelected(id);
   };
 
@@ -118,7 +113,7 @@ export class Controller {
     this.model.deleteTodo(id);
   };
 
-  toggleCompletionOfSelection = () => {
+  toggleBulkCompletion = () => {
     if (this.model.getCurrentlySelected().length === 0) {
       return true;
     } else {
@@ -141,11 +136,9 @@ export class Controller {
   handleUndo = () => {
     const position = this.model.getPosition();
     const actions = this.model.getActions();
-    console.log(actions);
-    if (position === -1) {
+    if (position === INVALID_POSITION) {
       return;
     }
-    console.log(position);
 
     switch (actions[position].command) {
       case todoActions.EDIT:
@@ -158,7 +151,6 @@ export class Controller {
         this.model.onDelete(actions[position], true);
         break;
       default:
-        break;
     }
   };
   handleRedo = () => {
@@ -167,7 +159,7 @@ export class Controller {
     if (position === actions.length - 1) {
       return;
     }
-    console.log(position);
+
     switch (actions[position + 1].command) {
       case todoActions.EDIT:
         this.model.onEdit(actions[position + 1], false);
@@ -179,7 +171,6 @@ export class Controller {
         this.model.onCreate(actions[position + 1], false);
         break;
       default:
-        break;
     }
   };
 }

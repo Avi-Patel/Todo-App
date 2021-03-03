@@ -1,4 +1,4 @@
-import { urgency, category, filterNames } from "../consts.js";
+import { urgency, category, filterNames } from "../constants.js";
 import { extractClosestNodeFromPath } from "../helper-functions.js";
 
 const findFilterTypeAndLevel = (event) => {
@@ -12,27 +12,36 @@ const findFilterTypeAndLevel = (event) => {
   switch (targetButton.id) {
     case urgency.LOW:
       targetButton.classList.toggle("filter-btn-selected");
-      return [filterNames.URGENCY, urgency.LOW];
+      return { urgencyOrCategory: filterNames.URGENCY, type: urgency.LOW };
 
     case urgency.MEDIUM:
       targetButton.classList.toggle("filter-btn-selected");
-      return [filterNames.URGENCY, urgency.MEDIUM];
+      return { urgencyOrCategory: filterNames.URGENCY, type: urgency.MEDIUM };
 
     case urgency.HIGH:
       targetButton.classList.toggle("filter-btn-selected");
-      return [filterNames.URGENCY, urgency.HIGH];
+      return { urgencyOrCategory: filterNames.URGENCY, type: urgency.HIGH };
 
     case category.PERSONAL:
       targetButton.classList.toggle("filter-btn-selected");
-      return [filterNames.CATEGORY, category.PERSONAL];
+      return {
+        urgencyOrCategory: filterNames.CATEGORY,
+        type: category.PERSONAL,
+      };
 
     case category.ACADEMIC:
       targetButton.classList.toggle("filter-btn-selected");
-      return [filterNames.CATEGORY, category.ACADEMIC];
+      return {
+        urgencyOrCategory: filterNames.CATEGORY,
+        type: category.ACADEMIC,
+      };
 
     case category.SOCIAL:
       targetButton.classList.toggle("filter-btn-selected");
-      return [filterNames.CATEGORY, category.SOCIAL];
+      return {
+        urgencyOrCategory: filterNames.CATEGORY,
+        type: category.SOCIAL,
+      };
     default:
   }
 };
@@ -40,14 +49,21 @@ const findFilterTypeAndLevel = (event) => {
 const bindFilterUpdate = (callback) => {
   document
     .querySelector("#urgency-filter")
-    .addEventListener("click", (event) =>
-      callback(findFilterTypeAndLevel(event))
-    );
+    .addEventListener("click", (event) => {
+      const isTypeAndLevelFound = findFilterTypeAndLevel(event);
+      console.log(isTypeAndLevelFound);
+      if (isTypeAndLevelFound) {
+        callback(isTypeAndLevelFound);
+      }
+    });
   document
     .querySelector("#category-filter")
-    .addEventListener("click", (event) =>
-      callback(findFilterTypeAndLevel(event))
-    );
+    .addEventListener("click", (event) => {
+      const isTypeAndLevelFound = findFilterTypeAndLevel(event);
+      if (isTypeAndLevelFound) {
+        callback(isTypeAndLevelFound);
+      }
+    });
 };
 
 const bindCheckBoxUpdate = (callback) => {

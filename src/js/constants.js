@@ -36,3 +36,5 @@ export const filterNames = {
   URGENCY: "urgency",
   CATEGORY: "category",
 };
+
+export const INVALID_POSITION = -1;

@@ -1,6 +1,6 @@
-import { createMockServer } from "./Mock-Server.js";
+import { createMockServer } from "./mockServer.js";
 import { showSnackbar } from "./helper-functions.js";
-import { todoActions } from "./consts.js";
+import { todoActions, filterNames, urgency, category } from "./constants.js";
 
 export class Model {
   constructor() {
@@ -8,8 +8,16 @@ export class Model {
     this.currentlySelected = [];
     this.counter = 0;
     this.filterData = {
-      urgencyFilterMask: Array(3).fill(false), // true/false
-      categoryFilterMask: Array(3).fill(false),
+      urgencyFilterMask: {
+        [urgency.LOW]: false,
+        [urgency.MEDIUM]: false,
+        [urgency.HIGH]: false,
+      }, // true/false
+      categoryFilterMask: {
+        [category.PERSONAL]: false,
+        [category.ACADEMIC]: false,
+        [category.SOCIAL]: false,
+      },
       notCompletedCheckBox: false,
       searchedText: "",
     };
@@ -57,7 +65,7 @@ export class Model {
 
   getCurrentlySelected = () => this.currentlySelected;
 
-  insertTodoAtAnyIndex = (index, todo) => this.allTodos.splice(index, 0, todo);
+  insertTodoAtIndex = (index, todo) => this.allTodos.splice(index, 0, todo);
 
   emptyAllTodosArray = () => (this.allTodos.length = 0);
 
@@ -102,16 +110,17 @@ export class Model {
     this.runStateChangeHandler();
   };
 
-  updateFilter = (urgencyOrCategory, index) => {
-    if (urgencyOrCategory === "urgency") {
+  updateFilter = (urgencyOrCategory, type) => {
+    if (urgencyOrCategory === filterNames.URGENCY) {
       const urgencyFilterMask = this.filterData.urgencyFilterMask;
-      urgencyFilterMask[index] = !urgencyFilterMask[index];
+      urgencyFilterMask[type] = !urgencyFilterMask[type];
       this.filterData = { ...this.filterData, urgencyFilterMask };
     } else {
       const categoryFilterMask = this.filterData.categoryFilterMask;
-      categoryFilterMask[index] = !categoryFilterMask[index];
+      categoryFilterMask[type] = !categoryFilterMask[type];
       this.filterData = { ...this.filterData, categoryFilterMask };
     }
+    console.log(this.filterData);
     this.runStateChangeHandler();
   };
 
@@ -156,19 +165,20 @@ export class Model {
       .catch((e) => showSnackbar(e));
   };
 
-  replaceTodoAtAnyIndex = (index, todo) => {
+  updateTodo = (updatedTodo) => {
+    const index = this.findIndexById(updatedTodo.ID);
     this.mockServer
-      .updateTodoInDatabase([todo.ID], [todo])
+      .updateTodoInDatabase([updatedTodo.ID], [updatedTodo])
       .then(() => {
         this.addActions(
           todoActions.EDIT,
-          [todo.ID],
-          [todo],
+          [updatedTodo.ID],
+          [{ ...updatedTodo }],
           [this.allTodos[index]]
         );
         this.allTodos = this.allTodos
           .slice(0, index)
-          .concat({ ...todo }, this.allTodos.slice(index + 1));
+          .concat(updatedTodo, this.allTodos.slice(index + 1));
         this.runStateChangeHandler();
       })
       .catch((e) => showSnackbar(e));
@@ -218,7 +228,6 @@ export class Model {
           });
           this.allTodos.splice(this.findIndexById(id), 1);
         });
-        console.log(deletedTodos);
         this.addActions(
           todoActions.DELETE,
           [...this.currentlySelected],
@@ -236,9 +245,15 @@ export class Model {
     this.mockServer
       .deleteTodoFromDatabase(action.Ids)
       .then(() => {
+        const allTodos = [...this.allTodos];
         action.Ids.forEach((id) => {
-          this.allTodos.splice(this.findIndexById(id));
+          // const index = this.findIndexById(id);
+          // this.allTodos = thia.allTodos
+          //   .slice(0, index)
+          //   .concat(this.addTodos.slice(index + 1));
+          allTodos.splice(this.findIndexById(id));
         });
+        this.allTodos = allTodos;
         isUndo ? this.position-- : this.position++;
         this.runStateChangeHandler();
       })
@@ -246,7 +261,6 @@ export class Model {
   };
 
   onDelete = (action, isUndo) => {
-    console.log(action);
     const todosForToBeCreated = isUndo ? action["oldTodos"] : action["todos"];
     this.mockServer
       .createTodoInDatabase(todosForToBeCreated)
