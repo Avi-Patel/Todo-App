@@ -135,6 +135,19 @@ export class Model {
     this.runStateChangeHandler();
   };
 
+  storeTodos = () => {
+    localStorage.setItem("todos", JSON.stringify(this.allTodos));
+  };
+
+  fetchTodos = () => {
+    let storedTodos = JSON.parse(localStorage.getItem("todos"));
+    console.log();
+    if (storedTodos) {
+      this.allTodos = storedTodos;
+      this.runStateChangeHandler();
+    }
+  };
+
   addTodo = (todo) => {
     this.mockServer
       .createTodoInDatabase([todo])
@@ -144,9 +157,7 @@ export class Model {
         this.addActions(todoActions.CREATE, [todo.ID], [todo]);
         this.runStateChangeHandler();
       })
-      .catch((e) => {
-        showSnackbar(e);
-      });
+      .catch((e) => showSnackbar(e));
   };
 
   deleteTodo = (id) => {

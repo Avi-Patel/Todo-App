@@ -6,5 +6,6 @@ export class TodoAppState {
   constructor() {
     this.model = new Model();
     this.controller = new Controller(view, this.model);
+    this.controller.handleInitialisation();
   }
 }

@@ -18,28 +18,12 @@ export const createMockServer = () => {
     return index;
   };
 
-  const randomBooleanValue = () => Math.random() <= 0.98;
+  const serverWorking = () => Math.random() <= 0.98;
 
   return {
-    getTodosFromDatabase: () =>
-      new Promise((resolve, reject) => {
-        if (randomBooleanValue()) {
-          const storedTodos = JSON.parse(localStorage.getItem("todos"));
-          todos.length = 0;
-          if (storedTodos) {
-            storedTodos.forEach((todo) => todos.push({ ...todo }));
-          }
-          resolve(todos);
-        } else {
-          reject(
-            "Opps!! something went wrong whiel fecthing data, plz try again after sometime"
-          );
-        }
-      }),
-
     createTodoInDatabase: (newTodos) =>
       new Promise((resolve, reject) => {
-        if (randomBooleanValue()) {
+        if (serverWorking()) {
           newTodos.forEach((newTodo) => todos.push({ ...newTodo }));
           resolve();
         } else {
@@ -51,7 +35,7 @@ export const createMockServer = () => {
 
     updateTodoInDatabase: (ids, updatedTodos) =>
       new Promise((resolve, reject) => {
-        if (randomBooleanValue()) {
+        if (serverWorking()) {
           ids.forEach((id, i) => {
             todos[getIndexInDatabase(id)] = { ...updatedTodos[i] };
           });
@@ -65,7 +49,7 @@ export const createMockServer = () => {
 
     deleteTodoFromDatabase: (ids) =>
       new Promise((resolve, reject) => {
-        if (randomBooleanValue()) {
+        if (serverWorking()) {
           ids.forEach((id) => {
             todos.splice(getIndexInDatabase(id), 1);
           });

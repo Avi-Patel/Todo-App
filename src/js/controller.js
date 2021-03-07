@@ -12,6 +12,8 @@ export class Controller {
     this.view = view;
 
     this.view.updateHeaderDate();
+    // this.view.bindInitialisation(this.handleInitialisation);
+    this.view.bindActionOnUnload(this.handleActionOnUnload);
     this.view.bindUndo(this.handleUndo);
     this.view.bindRedo(this.handleRedo);
     this.view.bindAddTodo(this.handleAddTodo);
@@ -56,9 +58,22 @@ export class Controller {
     this.view.analyticsUpdater.updateAnalyticsOnView();
   };
 
+  handleInitialisation = () => {
+    this.model.fetchTodos();
+  };
+
+  handleActionOnUnload = () => {
+    this.model.storeTodos();
+  };
+
+  uuid = () => {
+    const currentMilliSeconds = new Date().valueOf();
+    return currentMilliSeconds;
+  };
+
   createTodoObject = ({ counter, title, urgency, category }) => {
     return {
-      ID: counter,
+      ID: this.uuid(),
       date: new Date().toLocaleString(),
       title: title,
       urgency: urgency,

@@ -53,8 +53,24 @@ const bindDeleteSelectedTodos = (callback) => {
   });
 };
 
+// const bindInitialisation = (callback) => {
+//   document.addEventListener("DOMContentLoaded", () => {
+//     console.log("loading data");
+//     callback();
+//   });
+// };
+
+const bindActionOnUnload = (callback) => {
+  window.addEventListener("beforeunload", () => {
+    console.log("Saving data");
+    callback();
+  });
+};
+
 export default {
   updateHeaderDate,
+  // bindInitialisation,
+  bindActionOnUnload,
   bindUndo,
   bindRedo,
   analyticsUpdater,
