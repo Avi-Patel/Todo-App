@@ -1,26 +1,28 @@
 import { validateTodoForFilter } from "./filterValidationOnTodo.js";
 import { todoActions, INVALID_POSITION } from "./constants.js";
+import { View } from "./view.js";
+import { Model } from "./model.js";
 
 export class Controller {
-  constructor(view, model) {
-    this.model = model;
-    this.view = view;
-
-    this.view.updateHeaderDate();
-    // this.view.bindInitialisation(this.handleInitialisation);
-    this.view.bindActionOnUnload(this.handleUnloadEvent);
-    this.view.bindUndo(this.handleUndo);
-    this.view.bindRedo(this.handleRedo);
-    this.view.bindAddTodo(this.handleAddTodo);
-    this.view.bindFilterUpdate(this.handleFilterUpdate);
-    this.view.bindCheckBoxUpdate(this.handleCheckBoxUpdate);
-    this.view.bindSearchBoxUpdate(this.handleSearchBoxUpdate);
-    this.view.bindClearSearchBtn();
-    this.view.bindToggleCompletionOfSelection(this.toggleBulkCompletion);
-    this.view.bindClearSelection(this.clearSelection);
-    this.view.bindDeleteSelectedTodos(this.deleteSelectedTodos);
-
-    this.model.bindStateChangeHandler(this.render);
+  constructor() {
+    this.handlerConfig = {
+      DOMUnloadHandler: this.handleUnloadEvent,
+      createTodo: this.handleCreateTodo,
+      undoRedoHandlers: {
+        undo: this.handleUndo,
+        redo: this.handleRedo,
+      },
+      filterPanelHandlers: {
+        updateFilter: this.handleFilterUpdate,
+        updateCheckBox: this.handleCheckBoxUpdate,
+        updateSearchedText: this.handleSearchUpdate,
+      },
+      selectionHandlers: {
+        clearSelection: this.clearSelection,
+        toggleBulkCompletion: this.toggleBulkCompletion,
+        deleteSelectedTodos: this.deleteSelectedTodos,
+      },
+    };
 
     this.callbacksForTodo = {
       handleCompletionToggle: this.handleCompletionToggle,
@@ -29,6 +31,10 @@ export class Controller {
       handleEditTodo: this.handleEditTodo,
     };
 
+    this.view = new View(this.handlerConfig);
+    this.model = new Model();
+
+    this.model.bindStateChangeHandler(this.render);
     this.render(this.model.allTodos, this.model.currentlySelected, this.model.filterData);
   }
 
@@ -65,7 +71,7 @@ export class Controller {
     };
   };
 
-  handleAddTodo = (title, urgency, category) => {
+  handleCreateTodo = (title, urgency, category) => {
     const todo = this.createTodoObject(title, urgency, category);
     this.model.addTodo(todo).then((addedSuccessFully) => {
       if (addedSuccessFully) {
@@ -82,7 +88,7 @@ export class Controller {
     this.model.updateCheckBoxStatus(isChecked);
   };
 
-  handleSearchBoxUpdate = (searchInput) => {
+  handleSearchUpdate = (searchInput) => {
     this.model.updateSearchedInput(searchInput);
   };
 

@@ -1,22 +1,14 @@
 import { createMockServer } from "./mockServer.js";
 import { showSnackbar } from "./helper-functions.js";
-import { todoActions, filterNames, urgency, category, INVALID_POSITION } from "./constants.js";
+import { todoActions, filterNames, INVALID_POSITION } from "./constants.js";
 
 export class Model {
   constructor() {
     this.allTodos = [];
     this.currentlySelected = [];
     this.filterData = {
-      urgencyFilterMask: {
-        [urgency.LOW]: false,
-        [urgency.MEDIUM]: false,
-        [urgency.HIGH]: false,
-      },
-      categoryFilterMask: {
-        [category.PERSONAL]: false,
-        [category.ACADEMIC]: false,
-        [category.SOCIAL]: false,
-      },
+      urgencyFilterMask: {},
+      categoryFilterMask: {},
       isIncompleteEnabled: false,
       searchedText: "",
     };
@@ -32,10 +24,7 @@ export class Model {
 
   //utilities for accessing model data
   getPosition = () => this.position;
-  setPosition = (newPosition) => (this.position = newPosition);
-
   getActionsHistory = () => this.actionsHistory;
-
   getTodo = (index) => this.allTodos[index];
 
   findIndexById = (id) => {
@@ -50,8 +39,6 @@ export class Model {
     this.currentlySelected = [];
     this.runStateChangeHandler();
   };
-
-  setCurrentlySelected = (newSelectedIds) => (this.currentlySelected = newSelectedIds);
 
   getCurrentlySelected = () => this.currentlySelected;
 
@@ -106,6 +93,7 @@ export class Model {
       categoryFilterMask[type] = !categoryFilterMask[type];
       this.filterData = { ...this.filterData, categoryFilterMask };
     }
+    console.log(this.filterData);
     this.runStateChangeHandler();
   };
 
