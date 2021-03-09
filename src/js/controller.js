@@ -66,7 +66,7 @@ export class Controller {
     return currentMilliSeconds;
   };
 
-  createTodoObject = ({ counter, title, urgency, category }) => {
+  createTodoObject = ({ title, urgency, category }) => {
     return {
       ID: this.uuid(),
       date: new Date().toLocaleString(),
@@ -83,7 +83,6 @@ export class Controller {
     category = category.PERSONAL
   ) => {
     const todo = this.createTodoObject({
-      counter: this.model.getCounter(),
       title,
       urgency,
       category,
@@ -92,7 +91,6 @@ export class Controller {
   };
 
   handleFilterUpdate = ({ urgencyOrCategory, type }) => {
-    console.log(urgencyOrCategory, type);
     this.model.updateFilter(urgencyOrCategory, type);
   };
 
