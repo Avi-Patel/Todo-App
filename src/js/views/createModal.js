@@ -1,10 +1,5 @@
-const addListenerToModalUpdateBtn = (
-  btnID,
-  todo,
-  updateModal,
-  handleEditTodo
-) => {
-  const updateBtn = document.querySelector(`#${btnID}`);
+const addListenerToModalUpdateBtn = (todo, updateModal, handleEditTodo) => {
+  const updateBtn = document.querySelector("#modal-update-btn");
   updateBtn.addEventListener("click", () => {
     const updatedTitle = updateModal.querySelector("#update-todo-title").value;
     const updatedUrgency = updateModal.querySelector("#updated-urgency").value;
@@ -24,8 +19,8 @@ const addListenerToModalUpdateBtn = (
   });
 };
 
-const addListenerToModalCancelBtn = (btnID, updateModal) => {
-  const cancelBtn = document.querySelector(`#${btnID}`);
+const addListenerToModalCancelBtn = (updateModal) => {
+  const cancelBtn = document.querySelector("#modal-cancel-btn");
   cancelBtn.addEventListener("click", () => updateModal.remove());
 };
 
@@ -62,8 +57,8 @@ const createModal = (title, urgency, category) => {
       <option value="social" class="attribute">Social</option>
     </select>
     <div>
-      <button class="greenBtn mar8" id="updateTodoBtn">Update</button>
-      <button class="greenBtn mar8" id="cancelUpdateBtn">Cancel</button>
+      <button class="greenBtn mar8" id="modal-update-btn">Update</button>
+      <button class="greenBtn mar8" id="modal-cancel-btn">Cancel</button>
     </div>
   </div>`;
 
@@ -76,11 +71,6 @@ export const showModal = (todo, handleEditTodo) => {
   updateModal.querySelector("#updated-category").value = todo.category;
   document.body.appendChild(updateModal);
 
-  addListenerToModalUpdateBtn(
-    "updateTodoBtn",
-    todo,
-    updateModal,
-    handleEditTodo
-  );
-  addListenerToModalCancelBtn("cancelUpdateBtn", updateModal);
+  addListenerToModalUpdateBtn(todo, updateModal, handleEditTodo);
+  addListenerToModalCancelBtn(updateModal);
 };

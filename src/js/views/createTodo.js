@@ -6,8 +6,6 @@ const collectTodoInputsFromDOM = (handleAddTodo) => {
   if (title.value.trim() !== "") {
     handleAddTodo(title.value, urgency.value, category.value);
   }
-
-  title.value = "";
 };
 
 const bindAddTodo = (handleAddTodo) => {
@@ -18,6 +16,13 @@ const bindAddTodo = (handleAddTodo) => {
     );
 };
 
+const resetValuesInCreateTodoBox = () => {
+  document.querySelector("#todo-title").value = "";
+  document.querySelector("#urgency-input").selectedIndex = 0;
+  document.querySelector("#category-input").selectedIndex = 0;
+};
+
 export default {
   bindAddTodo,
+  resetValuesInCreateTodoBox,
 };

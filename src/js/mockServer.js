@@ -44,7 +44,12 @@ export const createMockServer = () => {
     createTodoInDatabase: (newTodos) =>
       new Promise((resolve, reject) => {
         if (serverWorking()) {
-          newTodos.forEach((newTodo) => todos.push({ ...newTodo }));
+          const newTodosAsArray = Array.isArray(newTodos)
+            ? newTodos
+            : [newTodos];
+          newTodosAsArray.forEach(
+            (newTodo) => (todos = todos.concat({ ...newTodo }))
+          );
           resolve();
         } else {
           reject(
@@ -56,8 +61,16 @@ export const createMockServer = () => {
     updateTodoInDatabase: (ids, updatedTodos) =>
       new Promise((resolve, reject) => {
         if (serverWorking()) {
-          ids.forEach((id, i) => {
-            todos[getIndexInDatabase(id)] = { ...updatedTodos[i] };
+          const idsAsArray = Array.isArray(ids) ? ids : [ids];
+          const updatedTodosAsArray = Array.isArray(updatedTodos)
+            ? updatedTodos
+            : [updatedTodos];
+
+          idsAsArray.forEach((id, i) => {
+            const index = getIndexInDatabase(id);
+            todos = todos
+              .splice(0, index)
+              .concat({ ...updatedTodosAsArray[i] }, todos.splice(index + 1));
           });
           resolve();
         } else {
@@ -70,8 +83,11 @@ export const createMockServer = () => {
     deleteTodoFromDatabase: (ids) =>
       new Promise((resolve, reject) => {
         if (serverWorking()) {
-          ids.forEach((id) => {
-            todos.splice(getIndexInDatabase(id), 1);
+          const idsAsArray = Array.isArray(ids) ? ids : [ids];
+
+          idsAsArray.forEach((id) => {
+            const index = getIndexInDatabase(id);
+            todos = todos.splice(0, index).concat(todos.splice(index + 1));
           });
           resolve();
         } else {

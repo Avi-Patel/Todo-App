@@ -13,16 +13,18 @@ const updateHeaderDate = () =>
 
 const bindUndo = (undoHandler) => {
   window.addEventListener("keypress", (event) => {
-    if (event.ctrlKey && event.key === "z") {
+    if ((event.ctrlKey || event.metaKey) && event.key === "z") {
       undoHandler();
+      event.preventDefault();
     }
   });
 };
 
 const bindRedo = (redoHandler) => {
   window.addEventListener("keypress", (event) => {
-    if (event.ctrlKey && event.key === "r") {
+    if ((event.ctrlKey || event.metaKey) && event.key === "y") {
       redoHandler();
+      event.preventDefault();
     }
   });
 };
@@ -75,6 +77,7 @@ export default {
   analyticsUpdater,
   displayTodos,
   bindAddTodo: createTodo.bindAddTodo,
+  resetValuesInCreateTodoBox: createTodo.resetValuesInCreateTodoBox,
   bindFilterUpdate: filterPanel.bindFilterUpdate,
   bindCheckBoxUpdate: filterPanel.bindCheckBoxUpdate,
   bindSearchBoxUpdate: filterPanel.bindSearchBoxUpdate,

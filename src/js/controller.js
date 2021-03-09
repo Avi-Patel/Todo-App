@@ -65,7 +65,7 @@ export class Controller {
     return currentMilliSeconds;
   };
 
-  createTodoObject = ({ title, urgency, category }) => {
+  createTodoObject = (title, urgency, category) => {
     return {
       ID: this.uuid(),
       date: new Date().toLocaleString(),
@@ -81,12 +81,12 @@ export class Controller {
     urgency = urgency.LOW,
     category = category.PERSONAL
   ) => {
-    const todo = this.createTodoObject({
-      title,
-      urgency,
-      category,
+    const todo = this.createTodoObject(title, urgency, category);
+    this.model.addTodo(todo).then((addedSuccessFully) => {
+      if (addedSuccessFully) {
+        this.view.resetValuesInCreateTodoBox();
+      }
     });
-    this.model.addTodo(todo);
   };
 
   handleFilterUpdate = ({ urgencyOrCategory, type }) => {
@@ -121,10 +121,16 @@ export class Controller {
   };
 
   toggleBulkCompletion = () => {
-    return (
-      this.model.getCurrentlySelected().length === 0 ||
-      this.model.toggleCompletionInBulk()
-    );
+    if (this.model.getCurrentlySelected().length === 0) {
+      return true;
+    }
+    const updatedTodos = this.model.getCurrentlySelected().map((id) => {
+      const index = this.model.findIndexById(id);
+      const todoAtIndex = this.model.getTodo(index);
+      return { ...todoAtIndex, completed: !todoAtIndex.completed };
+    });
+
+    this.model.toggleCompletionInBulk(updatedTodos);
   };
 
   clearSelection = () => {
@@ -140,40 +146,40 @@ export class Controller {
 
   handleUndo = () => {
     const position = this.model.getPosition();
-    const actions = this.model.getActions();
+    const actionsHistory = this.model.getActionsHistory();
     if (position === INVALID_POSITION) {
       return;
     }
 
-    switch (actions[position].command) {
+    switch (actionsHistory[position].actionType) {
       case todoActions.EDIT:
-        this.model.onEdit(actions[position], true);
+        this.model.onEdit(actionsHistory[position], true);
         break;
       case todoActions.CREATE:
-        this.model.onCreate(actions[position], true);
+        this.model.onCreate(actionsHistory[position], true);
         break;
       case todoActions.DELETE:
-        this.model.onDelete(actions[position], true);
+        this.model.onDelete(actionsHistory[position], true);
         break;
       default:
     }
   };
   handleRedo = () => {
     const position = this.model.getPosition();
-    const actions = this.model.getActions();
-    if (position === actions.length - 1) {
+    const actionsHistory = this.model.getActionsHistory();
+    if (position === actionsHistory.length - 1) {
       return;
     }
 
-    switch (actions[position + 1].command) {
+    switch (actionsHistory[position + 1].actionType) {
       case todoActions.EDIT:
-        this.model.onEdit(actions[position + 1], false);
+        this.model.onEdit(actionsHistory[position + 1], false);
         break;
       case todoActions.CREATE:
-        this.model.onDelete(actions[position + 1], false);
+        this.model.onDelete(actionsHistory[position + 1], false);
         break;
       case todoActions.DELETE:
-        this.model.onCreate(actions[position + 1], false);
+        this.model.onCreate(actionsHistory[position + 1], false);
         break;
       default:
     }
