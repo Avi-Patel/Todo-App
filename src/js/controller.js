@@ -8,7 +8,7 @@ export class Controller {
 
     this.view.updateHeaderDate();
     // this.view.bindInitialisation(this.handleInitialisation);
-    this.view.bindActionOnUnload(this.handleActionOnUnload);
+    this.view.bindActionOnUnload(this.handleUnloadEvent);
     this.view.bindUndo(this.handleUndo);
     this.view.bindRedo(this.handleRedo);
     this.view.bindAddTodo(this.handleAddTodo);
@@ -57,7 +57,7 @@ export class Controller {
     this.model.fetchTodos();
   };
 
-  handleActionOnUnload = () => {
+  handleUnloadEvent = () => {
     this.model.storeTodos();
   };
 
@@ -70,9 +70,9 @@ export class Controller {
     return {
       ID: this.uuid(),
       date: new Date().toLocaleString(),
-      title: title,
-      urgency: urgency,
-      category: category,
+      title,
+      urgency,
+      category,
       completed: false,
     };
   };
@@ -124,11 +124,10 @@ export class Controller {
   };
 
   toggleBulkCompletion = () => {
-    if (this.model.getCurrentlySelected().length === 0) {
-      return true;
-    } else {
-      this.model.toggleCompletionInBulk();
-    }
+    return (
+      this.model.getCurrentlySelected().length === 0 ||
+      this.model.toggleCompletionInBulk()
+    );
   };
 
   clearSelection = () => {
@@ -136,11 +135,10 @@ export class Controller {
   };
 
   deleteSelectedTodos = () => {
-    if (this.model.getCurrentlySelected().length === 0) {
-      return true;
-    } else {
-      this.model.deleteTodoInBulk();
-    }
+    return (
+      this.model.getCurrentlySelected().length === 0 ||
+      this.model.deleteTodoInBulk()
+    );
   };
 
   handleUndo = () => {

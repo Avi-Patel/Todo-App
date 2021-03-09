@@ -11,43 +11,45 @@ const updateHeaderDate = () =>
     "#headerDate"
   ).textContent = `${new Date().toDateString()}`);
 
-const bindUndo = (callback) => {
+const bindUndo = (undoHandler) => {
   window.addEventListener("keypress", (event) => {
     if (event.ctrlKey && event.key === "z") {
       console.log("undo event");
-      callback();
+      undoHandler();
     }
   });
 };
 
-const bindRedo = (callback) => {
+const bindRedo = (redoHandler) => {
   window.addEventListener("keypress", (event) => {
     if (event.ctrlKey && event.key === "r") {
       console.log("redo event");
-      callback();
+      redoHandler();
     }
   });
 };
 
-const bindToggleCompletionOfSelection = (callback) => {
+const bindToggleCompletionOfSelection = (toggleBulkCompletion) => {
   document
     .querySelector("#complete-selection")
     .addEventListener("click", () => {
-      if (callback()) {
+      const noTodosSelected = toggleBulkCompletion();
+      if (noTodosSelected) {
         showSnackbar("No Todos selected");
       }
     });
 };
 
-const bindClearSelection = (callback) => {
+const bindClearSelection = (clearSelection) => {
   document
     .querySelector("#clear-selection")
-    .addEventListener("click", () => callback());
+    .addEventListener("click", () => clearSelection());
 };
 
-const bindDeleteSelectedTodos = (callback) => {
+const bindDeleteSelectedTodos = (deleteSelectedTodos) => {
   document.querySelector("#delete-selection").addEventListener("click", () => {
-    if (callback()) {
+    const noTodosSelected = deleteSelectedTodos();
+    if (noTodosSelected) {
       showSnackbar("No Todos selected");
     }
   });
@@ -60,10 +62,10 @@ const bindDeleteSelectedTodos = (callback) => {
 //   });
 // };
 
-const bindActionOnUnload = (callback) => {
+const bindActionOnUnload = (handleUnloadEvent) => {
   window.addEventListener("beforeunload", () => {
     console.log("Saving data");
-    callback();
+    handleUnloadEvent();
   });
 };
 

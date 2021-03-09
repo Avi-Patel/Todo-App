@@ -1,19 +1,21 @@
-const collectTodoInputsFromDOM = (callback) => {
+const collectTodoInputsFromDOM = (handleAddTodo) => {
   const title = document.querySelector("#todo-title");
   const urgency = document.querySelector("#urgency-input");
   const category = document.querySelector("#category-input");
 
   if (title.value.trim() !== "") {
-    callback(title.value, urgency.value, category.value);
+    handleAddTodo(title.value, urgency.value, category.value);
   }
 
   title.value = "";
 };
 
-const bindAddTodo = (callback) => {
+const bindAddTodo = (handleAddTodo) => {
   document
     .querySelector("#todo-add-btn")
-    .addEventListener("click", (event) => collectTodoInputsFromDOM(callback));
+    .addEventListener("click", (event) =>
+      collectTodoInputsFromDOM(handleAddTodo)
+    );
 };
 
 export default {

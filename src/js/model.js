@@ -140,8 +140,6 @@ export class Model {
   };
 
   fetchTodos = () => {
-    console.log(this.mockServer.getTodosFromDatabase);
-    console.log(this.mockServer.getTodosFromDatabase());
     this.mockServer
       .getTodosFromDatabase()
       .then((todos) => {

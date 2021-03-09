@@ -1,4 +1,9 @@
-const addListenerToModalUpdateBtn = (btnID, todo, updateModal, callback) => {
+const addListenerToModalUpdateBtn = (
+  btnID,
+  todo,
+  updateModal,
+  handleEditTodo
+) => {
   const updateBtn = document.querySelector(`#${btnID}`);
   updateBtn.addEventListener("click", () => {
     const updatedTitle = updateModal.querySelector("#update-todo-title").value;
@@ -13,7 +18,7 @@ const addListenerToModalUpdateBtn = (btnID, todo, updateModal, callback) => {
         urgency: updatedUrgency,
         category: updatedCategory,
       };
-      callback(updatedTodo);
+      handleEditTodo(updatedTodo);
       updateModal.remove();
     }
   });
@@ -65,12 +70,17 @@ const createModal = (title, urgency, category) => {
   return updateModal;
 };
 
-export const showModal = (todo, callback) => {
+export const showModal = (todo, handleEditTodo) => {
   const updateModal = createModal(todo.title, todo.urgency, todo.category);
   updateModal.querySelector("#updated-urgency").value = todo.urgency;
   updateModal.querySelector("#updated-category").value = todo.category;
   document.body.appendChild(updateModal);
 
-  addListenerToModalUpdateBtn("updateTodoBtn", todo, updateModal, callback);
+  addListenerToModalUpdateBtn(
+    "updateTodoBtn",
+    todo,
+    updateModal,
+    handleEditTodo
+  );
   addListenerToModalCancelBtn("cancelUpdateBtn", updateModal);
 };
