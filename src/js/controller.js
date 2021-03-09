@@ -29,26 +29,14 @@ export class Controller {
       handleEditTodo: this.handleEditTodo,
     };
 
-    this.render(
-      this.model.allTodos,
-      this.model.currentlySelected,
-      this.model.filterData
-    );
+    this.render(this.model.allTodos, this.model.currentlySelected, this.model.filterData);
   }
 
   render = (todos, currentlySelectedIds, filterData) => {
-    const filteredTodos = todos.filter((todo) =>
-      validateTodoForFilter(todo, filterData)
-    );
+    const filteredTodos = todos.filter((todo) => validateTodoForFilter(todo, filterData));
     this.view.analyticsUpdater.resetCounts();
-    this.view.displayTodos(
-      filteredTodos,
-      currentlySelectedIds,
-      this.callbacksForTodo
-    );
-    filteredTodos.forEach((todo) =>
-      this.view.analyticsUpdater.updateCounts(todo)
-    );
+    this.view.displayTodos(filteredTodos, currentlySelectedIds, this.callbacksForTodo);
+    filteredTodos.forEach((todo) => this.view.analyticsUpdater.updateCounts(todo));
     this.view.analyticsUpdater.updateAnalyticsOnView();
   };
 
@@ -65,7 +53,8 @@ export class Controller {
     return currentMilliSeconds;
   };
 
-  createTodoObject = (title, urgency, category) => {
+  // handle default here
+  createTodoObject = (title, urgency = urgency.LOW, category = category.PERSONAL) => {
     return {
       ID: this.uuid(),
       date: new Date().toLocaleString(),
@@ -76,11 +65,7 @@ export class Controller {
     };
   };
 
-  handleAddTodo = (
-    title,
-    urgency = urgency.LOW,
-    category = category.PERSONAL
-  ) => {
+  handleAddTodo = (title, urgency, category) => {
     const todo = this.createTodoObject(title, urgency, category);
     this.model.addTodo(todo).then((addedSuccessFully) => {
       if (addedSuccessFully) {
@@ -138,10 +123,7 @@ export class Controller {
   };
 
   deleteSelectedTodos = () => {
-    return (
-      this.model.getCurrentlySelected().length === 0 ||
-      this.model.deleteTodoInBulk()
-    );
+    return this.model.getCurrentlySelected().length === 0 || this.model.deleteTodoInBulk();
   };
 
   handleUndo = () => {

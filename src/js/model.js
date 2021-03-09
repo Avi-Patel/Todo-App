@@ -1,12 +1,6 @@
 import { createMockServer } from "./mockServer.js";
 import { showSnackbar } from "./helper-functions.js";
-import {
-  todoActions,
-  filterNames,
-  urgency,
-  category,
-  INVALID_POSITION,
-} from "./constants.js";
+import { todoActions, filterNames, urgency, category, INVALID_POSITION } from "./constants.js";
 
 export class Model {
   constructor() {
@@ -17,13 +11,13 @@ export class Model {
         [urgency.LOW]: false,
         [urgency.MEDIUM]: false,
         [urgency.HIGH]: false,
-      }, // true/false
+      },
       categoryFilterMask: {
         [category.PERSONAL]: false,
         [category.ACADEMIC]: false,
         [category.SOCIAL]: false,
       },
-      notCompletedCheckBox: false,
+      isIncompleteEnabled: false,
       searchedText: "",
     };
     this.position = INVALID_POSITION;
@@ -33,11 +27,7 @@ export class Model {
 
   bindStateChangeHandler = (render) => (this.stateChangeHandler = render);
   runStateChangeHandler = () => {
-    this.stateChangeHandler(
-      this.allTodos,
-      this.currentlySelected,
-      this.filterData
-    );
+    this.stateChangeHandler(this.allTodos, this.currentlySelected, this.filterData);
   };
 
   //utilities for accessing model data
@@ -61,14 +51,9 @@ export class Model {
     this.runStateChangeHandler();
   };
 
-  setCurrentlySelected = (newSelectedIds) =>
-    (this.currentlySelected = newSelectedIds);
+  setCurrentlySelected = (newSelectedIds) => (this.currentlySelected = newSelectedIds);
 
   getCurrentlySelected = () => this.currentlySelected;
-
-  insertTodoAtIndex = (index, todo) => this.allTodos.splice(index, 0, todo);
-
-  emptyAllTodosArray = () => (this.allTodos.length = 0);
 
   findIndexToInsert = (id) => {
     let index = this.allTodos.length;
@@ -125,7 +110,7 @@ export class Model {
   };
 
   updateCheckBoxStatus = (isChecked) => {
-    this.filterData = { ...this.filterData, notCompletedCheckBox: isChecked };
+    this.filterData = { ...this.filterData, isIncompleteEnabled: isChecked };
     this.runStateChangeHandler();
   };
 
@@ -169,12 +154,8 @@ export class Model {
       .deleteTodoFromDatabase(id)
       .then(() => {
         const index = this.findIndexById(id);
-        this.addActions(todoActions.DELETE, [id], undefined, [
-          this.allTodos[index],
-        ]);
-        this.allTodos = this.allTodos
-          .slice(0, index)
-          .concat(this.allTodos.slice(index + 1));
+        this.addActions(todoActions.DELETE, [id], undefined, [this.allTodos[index]]);
+        this.allTodos = this.allTodos.slice(0, index).concat(this.allTodos.slice(index + 1));
         this.runStateChangeHandler();
       })
       .catch(showSnackbar);
@@ -216,12 +197,7 @@ export class Model {
             .slice(0, index)
             .concat({ ...updatedTodos[i] }, this.allTodos.slice(index + 1));
         });
-        this.addActions(
-          todoActions.EDIT,
-          [...this.currentlySelected],
-          updatedTodos,
-          oldTodos
-        );
+        this.addActions(todoActions.EDIT, [...this.currentlySelected], updatedTodos, oldTodos);
         this.currentlySelected = [];
         this.runStateChangeHandler();
       })
@@ -235,9 +211,7 @@ export class Model {
       deletedTodos.push({
         ...this.allTodos[index],
       });
-      this.allTodos = this.allTodos
-        .slice(0, index)
-        .concat(this.allTodos.slice(index + 1));
+      this.allTodos = this.allTodos.slice(0, index).concat(this.allTodos.slice(index + 1));
     });
     return deletedTodos;
   };
@@ -247,12 +221,7 @@ export class Model {
       .deleteTodoFromDatabase(this.currentlySelected)
       .then(() => {
         const deletedTodos = this.getDeletedTodos();
-        this.addActions(
-          todoActions.DELETE,
-          [...this.currentlySelected],
-          undefined,
-          deletedTodos
-        );
+        this.addActions(todoActions.DELETE, [...this.currentlySelected], undefined, deletedTodos);
         this.currentlySelected = [];
         this.runStateChangeHandler();
       })
@@ -267,9 +236,7 @@ export class Model {
         const allTodos = [...this.allTodos];
         action.Ids.forEach((id) => {
           const index = this.findIndexById(id);
-          this.allTodos = this.allTodos
-            .slice(0, index)
-            .concat(this.allTodos.slice(index + 1));
+          this.allTodos = this.allTodos.slice(0, index).concat(this.allTodos.slice(index + 1));
         });
         this.allTodos = allTodos;
         isUndo ? this.position-- : this.position++;
@@ -285,9 +252,7 @@ export class Model {
       .then(() => {
         todosToBeCreated.forEach((todo, i) => {
           const index = this.findIndexToInsert(action.Ids[i]);
-          this.allTodos = this.allTodos
-            .slice(0, index)
-            .concat(todo, this.allTodos.slice(index));
+          this.allTodos = this.allTodos.slice(0, index).concat(todo, this.allTodos.slice(index));
         });
         isUndo ? this.position-- : this.position++;
         this.runStateChangeHandler();

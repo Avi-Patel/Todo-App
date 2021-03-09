@@ -12,10 +12,9 @@ export const validateTodoForFilter = (todo, filterData) => {
     filterData.categoryFilterMask[category.SOCIAL]
   );
 
-  const isChecked = filterData.notCompletedCheckBox;
+  const isChecked = filterData.isIncompleteEnabled;
   const isSatifiesSearchText =
-    filterData.searchedText === "" ||
-    todo.title.toLowerCase().indexOf(filterData.searchedText) + 1;
+    filterData.searchedText === "" || todo.title.toLowerCase().indexOf(filterData.searchedText) + 1;
 
   return (
     (filterData.urgencyFilterMask[todo.urgency] || noUrgencyApplied) &&

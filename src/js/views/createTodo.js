@@ -11,9 +11,7 @@ const collectTodoInputsFromDOM = (handleAddTodo) => {
 const bindAddTodo = (handleAddTodo) => {
   document
     .querySelector("#todo-add-btn")
-    .addEventListener("click", (event) =>
-      collectTodoInputsFromDOM(handleAddTodo)
-    );
+    .addEventListener("click", (event) => collectTodoInputsFromDOM(handleAddTodo));
 };
 
 const resetValuesInCreateTodoBox = () => {

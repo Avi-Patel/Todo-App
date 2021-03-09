@@ -7,9 +7,7 @@ import { showSnackbar } from "./helper-functions.js";
 const analyticsUpdater = new AnalyticsUpdater();
 
 const updateHeaderDate = () =>
-  (document.querySelector(
-    "#headerDate"
-  ).textContent = `${new Date().toDateString()}`);
+  (document.querySelector("#headerDate").textContent = `${new Date().toDateString()}`);
 
 const bindUndo = (undoHandler) => {
   window.addEventListener("keypress", (event) => {
@@ -30,20 +28,16 @@ const bindRedo = (redoHandler) => {
 };
 
 const bindToggleCompletionOfSelection = (toggleBulkCompletion) => {
-  document
-    .querySelector("#complete-selection")
-    .addEventListener("click", () => {
-      const noTodosSelected = toggleBulkCompletion();
-      if (noTodosSelected) {
-        showSnackbar("No Todos selected");
-      }
-    });
+  document.querySelector("#complete-selection").addEventListener("click", () => {
+    const noTodosSelected = toggleBulkCompletion();
+    if (noTodosSelected) {
+      showSnackbar("No Todos selected");
+    }
+  });
 };
 
 const bindClearSelection = (clearSelection) => {
-  document
-    .querySelector("#clear-selection")
-    .addEventListener("click", () => clearSelection());
+  document.querySelector("#clear-selection").addEventListener("click", () => clearSelection());
 };
 
 const bindDeleteSelectedTodos = (deleteSelectedTodos) => {

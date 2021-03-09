@@ -1,10 +1,4 @@
-import {
-  todoActions,
-  color,
-  categoryIcon,
-  urgency,
-  category,
-} from "../constants.js";
+import { todoActions, color, categoryIcon, urgency, category } from "../constants.js";
 import { showModal } from "./createModal.js";
 import { extractClosestNodeFromPath } from "../helper-functions.js";
 
@@ -85,19 +79,13 @@ const addListenerForTodoNode = (todoNode, todo, todoEventHandlers) => {
   });
 };
 
-export const displayTodos = (
-  todos,
-  currentlySelectedIds,
-  todoEventHandlers
-) => {
+export const displayTodos = (todos, currentlySelectedIds, todoEventHandlers) => {
   document.querySelector("#todos-box").innerHTML = "";
 
   todos.forEach((todo) => {
     const newtodoNode = createTodoNode(todo, todoEventHandlers);
     if (currentlySelectedIds.indexOf(todo.ID) !== -1) {
-      newtodoNode
-        .querySelector(`[data-type=${todoActions.SELECT}]`)
-        .classList.toggle("blueCircle");
+      newtodoNode.querySelector(`[data-type=${todoActions.SELECT}]`).classList.toggle("blueCircle");
     }
     document.querySelector("#todos-box").appendChild(newtodoNode);
   });

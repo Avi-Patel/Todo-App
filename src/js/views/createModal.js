@@ -3,8 +3,7 @@ const addListenerToModalUpdateBtn = (todo, updateModal, handleEditTodo) => {
   updateBtn.addEventListener("click", () => {
     const updatedTitle = updateModal.querySelector("#update-todo-title").value;
     const updatedUrgency = updateModal.querySelector("#updated-urgency").value;
-    const updatedCategory = updateModal.querySelector("#updated-category")
-      .value;
+    const updatedCategory = updateModal.querySelector("#updated-category").value;
 
     if (updatedTitle.trim() !== "") {
       const updatedTodo = {

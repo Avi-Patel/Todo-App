@@ -4,8 +4,7 @@ class Analytics {
     this.completedTodos = 0;
     this.totalTodos = 0;
   }
-  setCompletedTodos = (completedTodos) =>
-    (this.completedTodos = completedTodos); //
+  setCompletedTodos = (completedTodos) => (this.completedTodos = completedTodos); //
 
   setTotalTodos = (totalTodos) => (this.totalTodos = totalTodos);
 
@@ -33,11 +32,8 @@ export class AnalyticsUpdater {
     document.querySelector("#percentage-text").textContent =
       this.analytics.getCompletedTodos() === 0
         ? "0 %"
-        : Math.round(
-            (this.analytics.getCompletedTodos() /
-              this.analytics.getTotalTodos()) *
-              100
-          ) + " %";
+        : Math.round((this.analytics.getCompletedTodos() / this.analytics.getTotalTodos()) * 100) +
+          " %";
     document.querySelector(
       "#ratio-text"
     ).textContent = `${this.analytics.getCompletedTodos()} / ${this.analytics.getTotalTodos()}`;

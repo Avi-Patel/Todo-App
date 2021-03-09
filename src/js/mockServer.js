@@ -44,17 +44,11 @@ export const createMockServer = () => {
     createTodoInDatabase: (newTodos) =>
       new Promise((resolve, reject) => {
         if (serverWorking()) {
-          const newTodosAsArray = Array.isArray(newTodos)
-            ? newTodos
-            : [newTodos];
-          newTodosAsArray.forEach(
-            (newTodo) => (todos = todos.concat({ ...newTodo }))
-          );
+          const newTodosAsArray = Array.isArray(newTodos) ? newTodos : [newTodos];
+          newTodosAsArray.forEach((newTodo) => (todos = todos.concat({ ...newTodo })));
           resolve();
         } else {
-          reject(
-            "Opps!! something went wrong server side, plz try again after sometime"
-          );
+          reject("Opps!! something went wrong server side, plz try again after sometime");
         }
       }),
 
@@ -62,9 +56,7 @@ export const createMockServer = () => {
       new Promise((resolve, reject) => {
         if (serverWorking()) {
           const idsAsArray = Array.isArray(ids) ? ids : [ids];
-          const updatedTodosAsArray = Array.isArray(updatedTodos)
-            ? updatedTodos
-            : [updatedTodos];
+          const updatedTodosAsArray = Array.isArray(updatedTodos) ? updatedTodos : [updatedTodos];
 
           idsAsArray.forEach((id, i) => {
             const index = getIndexInDatabase(id);
@@ -74,9 +66,7 @@ export const createMockServer = () => {
           });
           resolve();
         } else {
-          reject(
-            "Opps!! Cannot update right now, plz try again after sometime"
-          );
+          reject("Opps!! Cannot update right now, plz try again after sometime");
         }
       }),
 
@@ -91,9 +81,7 @@ export const createMockServer = () => {
           });
           resolve();
         } else {
-          reject(
-            "Opps!! something went wrong while deleting TODO, plz try again after sometime"
-          );
+          reject("Opps!! something went wrong while deleting TODO, plz try again after sometime");
         }
       }),
   };
