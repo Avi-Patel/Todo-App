@@ -1,10 +1,5 @@
 import { validateTodoForFilter } from "./filterValidationOnTodo.js";
-import {
-  todoActions,
-  urgency,
-  category,
-  INVALID_POSITION,
-} from "./constants.js";
+import { todoActions, INVALID_POSITION } from "./constants.js";
 
 export class Controller {
   constructor(view, model) {

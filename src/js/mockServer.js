@@ -8,7 +8,7 @@
 // const sortTodosByID = (todo1, Todo2) => todo1.ID - Todo2.ID;
 
 export const createMockServer = () => {
-  const todos = [];
+  let todos = [];
 
   const getIndexInDatabase = (id) => {
     let index = null;
@@ -21,6 +21,26 @@ export const createMockServer = () => {
   const serverWorking = () => Math.random() <= 0.98;
 
   return {
+    getTodosFromDatabase: () =>
+      new Promise((resolve, reject) => {
+        let storedTodos = JSON.parse(localStorage.getItem("todos"));
+        const newTodos = [];
+        if (storedTodos) {
+          todos = [];
+          storedTodos.forEach((todo) => {
+            todos = todos.concat(todo);
+            newTodos.push({ ...todo });
+          });
+        }
+        resolve(newTodos);
+      }),
+
+    storeTodosToDatabase: () =>
+      new Promise((resolve, reject) => {
+        localStorage.setItem("todos", JSON.stringify(todos));
+        resolve();
+      }),
+
     createTodoInDatabase: (newTodos) =>
       new Promise((resolve, reject) => {
         if (serverWorking()) {
