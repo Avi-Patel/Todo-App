@@ -40,7 +40,6 @@ export class Controller {
     const filteredTodos = todos.filter((todo) =>
       validateTodoForFilter(todo, filterData)
     );
-    // console.log(filteredTodos);
     this.view.analyticsUpdater.resetCounts();
     this.view.displayTodos(
       filteredTodos,

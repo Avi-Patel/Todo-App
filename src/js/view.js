@@ -14,7 +14,6 @@ const updateHeaderDate = () =>
 const bindUndo = (undoHandler) => {
   window.addEventListener("keypress", (event) => {
     if (event.ctrlKey && event.key === "z") {
-      console.log("undo event");
       undoHandler();
     }
   });
@@ -23,7 +22,6 @@ const bindUndo = (undoHandler) => {
 const bindRedo = (redoHandler) => {
   window.addEventListener("keypress", (event) => {
     if (event.ctrlKey && event.key === "r") {
-      console.log("redo event");
       redoHandler();
     }
   });
@@ -64,7 +62,6 @@ const bindDeleteSelectedTodos = (deleteSelectedTodos) => {
 
 const bindActionOnUnload = (handleUnloadEvent) => {
   window.addEventListener("beforeunload", () => {
-    console.log("Saving data");
     handleUnloadEvent();
   });
 };

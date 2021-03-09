@@ -1,12 +1,17 @@
 import { createMockServer } from "./mockServer.js";
 import { showSnackbar } from "./helper-functions.js";
-import { todoActions, filterNames, urgency, category } from "./constants.js";
+import {
+  todoActions,
+  filterNames,
+  urgency,
+  category,
+  INVALID_POSITION,
+} from "./constants.js";
 
 export class Model {
   constructor() {
     this.allTodos = [];
     this.currentlySelected = [];
-    this.counter = 0;
     this.filterData = {
       urgencyFilterMask: {
         [urgency.LOW]: false,
@@ -21,12 +26,12 @@ export class Model {
       notCompletedCheckBox: false,
       searchedText: "",
     };
-    this.position = -1;
+    this.position = INVALID_POSITION;
     this.actions = [];
     this.mockServer = createMockServer();
   }
 
-  bindStateChangeHandler = (callback) => (this.stateChangeHandler = callback);
+  bindStateChangeHandler = (render) => (this.stateChangeHandler = render);
   runStateChangeHandler = () => {
     this.stateChangeHandler(
       this.allTodos,
@@ -36,10 +41,6 @@ export class Model {
   };
 
   //utilities for accessing model data
-
-  getCounter = () => this.counter;
-  setCounter = (newCounter) => (this.counter = newCounter);
-
   getPosition = () => this.position;
   setPosition = (newPosition) => (this.position = newPosition);
 
@@ -120,7 +121,6 @@ export class Model {
       categoryFilterMask[type] = !categoryFilterMask[type];
       this.filterData = { ...this.filterData, categoryFilterMask };
     }
-    console.log(this.filterData);
     this.runStateChangeHandler();
   };
 
@@ -203,15 +203,24 @@ export class Model {
     });
   };
 
-  toggleCompletionInBulk = () => {
-    const todosForUpdation = this.getTodosFromIdsForCompletion();
+  getOldTodosAndUpdatedTodos = () => {
     const oldTodos = [];
+    const updatedTodos = [];
+    this.currentlySelected.forEach((id) => {
+      const todo = this.allTodos[this.findIndexById(id)];
+      oldTodos.push({ ...todo });
+      updatedTodos.push({ ...todo, completed: !todo.completed });
+    });
+    return [oldTodos, updatedTodos];
+  };
+
+  toggleCompletionInBulk = () => {
+    const [oldTodos, todosForUpdation] = this.getOldTodosAndUpdatedTodos();
     this.mockServer
       .updateTodoInDatabase(this.currentlySelected, todosForUpdation)
       .then(() => {
         this.currentlySelected.forEach((id, i) => {
           const index = this.findIndexById(id);
-          oldTodos.push({ ...this.allTodos[index] });
           this.allTodos = this.allTodos
             .slice(0, index)
             .concat(todosForUpdation[i], this.allTodos.slice(index + 1));
@@ -228,17 +237,25 @@ export class Model {
       .catch((e) => showSnackbar(e));
   };
 
+  getDeletedTodos = () => {
+    const deletedTodos = [];
+    this.currentlySelected.forEach((id) => {
+      deletedTodos.push({
+        ...this.allTodos[this.findIndexById(id)],
+      });
+      const index = this.findIndexById(id);
+      this.allTodos = this.allTodos
+        .slice(0, index)
+        .concat(this.allTodos.slice(index + 1));
+    });
+    return deletedTodos;
+  };
+
   deleteTodoInBulk = () => {
     this.mockServer
       .deleteTodoFromDatabase(this.currentlySelected)
       .then(() => {
-        const deletedTodos = [];
-        this.currentlySelected.forEach((id) => {
-          deletedTodos.push({
-            ...this.allTodos[this.findIndexById(id)],
-          });
-          this.allTodos.splice(this.findIndexById(id), 1);
-        });
+        const deletedTodos = this.getDeletedTodos();
         this.addActions(
           todoActions.DELETE,
           [...this.currentlySelected],
@@ -258,11 +275,10 @@ export class Model {
       .then(() => {
         const allTodos = [...this.allTodos];
         action.Ids.forEach((id) => {
-          // const index = this.findIndexById(id);
-          // this.allTodos = thia.allTodos
-          //   .slice(0, index)
-          //   .concat(this.addTodos.slice(index + 1));
-          allTodos.splice(this.findIndexById(id));
+          const index = this.findIndexById(id);
+          this.allTodos = this.allTodos
+            .slice(0, index)
+            .concat(this.allTodos.slice(index + 1));
         });
         this.allTodos = allTodos;
         isUndo ? this.position-- : this.position++;
