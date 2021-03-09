@@ -1,14 +1,18 @@
-import { todoActions, color, categoryIcon } from "../consts.js";
+import { todoActions, color, categoryIcon, urgency, category } from "../constants.js";
 import { showModal } from "./createModal.js";
 import { extractClosestNodeFromPath } from "../helper-functions.js";
 
-const createTodoNode = (todo, callbacks) => {
-  const urgencyIconColors = [color.GREEN, color.YELLOW, color.RED];
-  const categoryIcons = [
-    categoryIcon.USERALT,
-    categoryIcon.BOOKOPEN,
-    categoryIcon.USERS,
-  ];
+const createTodoNode = (todo, todoEventHandlers) => {
+  const urgencyIconColors = {
+    [urgency.LOW]: color.GREEN,
+    [urgency.MEDIUM]: color.YELLOW,
+    [urgency.HIGH]: color.RED,
+  };
+  const categoryIcons = {
+    [category.PERSONAL]: categoryIcon.USERALT,
+    [category.ACADEMIC]: categoryIcon.BOOKOPEN,
+    [category.SOCIAL]: categoryIcon.USERS,
+  };
   const todoNode = document.createElement("div");
   todoNode.classList.add(
     "TDitem",
@@ -42,11 +46,11 @@ const createTodoNode = (todo, callbacks) => {
     ${todo.completed ? "Completed Undo?" : "Mark Completed"}
     </button>
     <button class="whiteCircle mar8" data-type="select"></button>`;
-  addListenerForTodoNode(todoNode, todo, callbacks);
+  addListenerForTodoNode(todoNode, todo, todoEventHandlers);
   return todoNode;
 };
 
-const addListenerForTodoNode = (todoNode, todo, callbacks) => {
+const addListenerForTodoNode = (todoNode, todo, todoEventHandlers) => {
   todoNode.addEventListener("click", (event) => {
     const targetButton =
       event.target.tagName === "BUTTON"
@@ -58,16 +62,16 @@ const addListenerForTodoNode = (todoNode, todo, callbacks) => {
     const id = parseInt(todoNode.dataset.id);
     switch (targetButton.dataset.type) {
       case todoActions.MARK_COMPLETED:
-        callbacks.handleTodoToggle(id);
+        todoEventHandlers.handleCompletionToggle(id);
         break;
       case todoActions.SELECT:
-        callbacks.handleTogglingFromSelected(id);
+        todoEventHandlers.handleSelectionToggle(id);
         break;
       case todoActions.DELETE:
-        callbacks.handleDeleteTodo(id);
+        todoEventHandlers.handleDeleteTodo(id);
         break;
       case todoActions.EDIT:
-        showModal(todo, callbacks.handleEditTodo);
+        showModal(todo, todoEventHandlers.handleEditTodo);
         break;
       default:
         break;
@@ -75,15 +79,13 @@ const addListenerForTodoNode = (todoNode, todo, callbacks) => {
   });
 };
 
-export const displayTodos = (todos, currentlySelectedIds, callbacks) => {
+export const displayTodos = (todos, currentlySelectedIds, todoEventHandlers) => {
   document.querySelector("#todos-box").innerHTML = "";
 
   todos.forEach((todo) => {
-    const newtodoNode = createTodoNode(todo, callbacks);
+    const newtodoNode = createTodoNode(todo, todoEventHandlers);
     if (currentlySelectedIds.indexOf(todo.ID) !== -1) {
-      newtodoNode
-        .querySelector(`[data-type=${todoActions.SELECT}]`)
-        .classList.toggle("blueCircle");
+      newtodoNode.querySelector(`[data-type=${todoActions.SELECT}]`).classList.toggle("blueCircle");
     }
     document.querySelector("#todos-box").appendChild(newtodoNode);
   });

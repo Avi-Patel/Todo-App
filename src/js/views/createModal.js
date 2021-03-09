@@ -1,32 +1,29 @@
-const addListenerToModalUpdateBtn = (btnID, todo, updateModal, callback) => {
-  const updateBtn = document.querySelector(`#${btnID}`);
+const addListenerToModalUpdateBtn = (todo, updateModal, handleEditTodo) => {
+  const updateBtn = document.querySelector("#modal-update-btn");
   updateBtn.addEventListener("click", () => {
     const updatedTitle = updateModal.querySelector("#update-todo-title").value;
+    const updatedUrgency = updateModal.querySelector("#updated-urgency").value;
+    const updatedCategory = updateModal.querySelector("#updated-category").value;
 
     if (updatedTitle.trim() !== "") {
-      const updatedTodo = { ...todo };
-      updatedTodo.title = updatedTitle;
-      updatedTodo.urgency = updateModal.querySelector(
-        "#updated-urgency"
-      ).selectedIndex;
-      updatedTodo.category = updateModal.querySelector(
-        "#updated-category"
-      ).selectedIndex;
-
-      callback(updatedTodo);
+      const updatedTodo = {
+        ...todo,
+        title: updatedTitle,
+        urgency: updatedUrgency,
+        category: updatedCategory,
+      };
+      handleEditTodo(updatedTodo);
       updateModal.remove();
     }
   });
 };
 
-const addListenerToModalCancelBtn = (btnID, updateModal) => {
-  const cancelBtn = document.querySelector(`#${btnID}`);
+const addListenerToModalCancelBtn = (updateModal) => {
+  const cancelBtn = document.querySelector("#modal-cancel-btn");
   cancelBtn.addEventListener("click", () => updateModal.remove());
 };
 
-const createModal = (title, urgencyIndex, categoryIndex) => {
-  const urgency = ["low", "medium", "high"];
-  const category = ["personal", "academic", "social"];
+const createModal = (title, urgency, category) => {
   const updateModal = document.createElement("div");
   updateModal.classList.add("updateModal");
 
@@ -43,7 +40,7 @@ const createModal = (title, urgencyIndex, categoryIndex) => {
       name="urgency"
       id="updated-urgency"
       class="updateModalPreference mar10 pad12"
-      value="${category[urgencyIndex]}">
+      value="${urgency}">
       <option value="low" class="attribute">Low</option>
       <option value="medium" class="attribute">Medium</option>
       <option value="high" class="attribute">High</option>
@@ -53,26 +50,26 @@ const createModal = (title, urgencyIndex, categoryIndex) => {
       name="category"
       id="updated-category"
       class="updateModalPreference mar10 pad12"
-      value="${urgency[categoryIndex]}">
+      value="${category}">
       <option value="personal" class="attribute">Personal</option>
       <option value="academic" class="attribute">Academic</option>
       <option value="social" class="attribute">Social</option>
     </select>
     <div>
-      <button class="greenBtn mar8" id="updateTodoBtn">Update</button>
-      <button class="greenBtn mar8" id="cancelUpdateBtn">Cancel</button>
+      <button class="greenBtn mar8" id="modal-update-btn">Update</button>
+      <button class="greenBtn mar8" id="modal-cancel-btn">Cancel</button>
     </div>
   </div>`;
 
   return updateModal;
 };
 
-export const showModal = (todo, callback) => {
+export const showModal = (todo, handleEditTodo) => {
   const updateModal = createModal(todo.title, todo.urgency, todo.category);
-  updateModal.querySelector("#updated-urgency").selectedIndex = todo.urgency;
-  updateModal.querySelector("#updated-category").selectedIndex = todo.category;
+  updateModal.querySelector("#updated-urgency").value = todo.urgency;
+  updateModal.querySelector("#updated-category").value = todo.category;
   document.body.appendChild(updateModal);
 
-  addListenerToModalUpdateBtn("updateTodoBtn", todo, updateModal, callback);
-  addListenerToModalCancelBtn("cancelUpdateBtn", updateModal);
+  addListenerToModalUpdateBtn(todo, updateModal, handleEditTodo);
+  addListenerToModalCancelBtn(updateModal);
 };

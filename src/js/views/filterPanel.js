@@ -1,73 +1,80 @@
-import { urgency, category, filterNames } from "../consts.js";
+import { urgency, category, filterNames } from "../constants.js";
 import { extractClosestNodeFromPath } from "../helper-functions.js";
 
 const findFilterTypeAndLevel = (event) => {
   const targetButton =
-    event.target.tagName === "BUTTON"
-      ? event.target
-      : extractClosestNodeFromPath(event, "button");
+    event.target.tagName === "BUTTON" ? event.target : extractClosestNodeFromPath(event, "button");
 
   if (!targetButton) return;
 
   switch (targetButton.id) {
     case urgency.LOW:
       targetButton.classList.toggle("filter-btn-selected");
-      return [filterNames.URGENCY, urgency.LOW];
+      return { urgencyOrCategory: filterNames.URGENCY, type: urgency.LOW };
 
     case urgency.MEDIUM:
       targetButton.classList.toggle("filter-btn-selected");
-      return [filterNames.URGENCY, urgency.MEDIUM];
+      return { urgencyOrCategory: filterNames.URGENCY, type: urgency.MEDIUM };
 
     case urgency.HIGH:
       targetButton.classList.toggle("filter-btn-selected");
-      return [filterNames.URGENCY, urgency.HIGH];
+      return { urgencyOrCategory: filterNames.URGENCY, type: urgency.HIGH };
 
     case category.PERSONAL:
       targetButton.classList.toggle("filter-btn-selected");
-      return [filterNames.CATEGORY, category.PERSONAL];
+      return {
+        urgencyOrCategory: filterNames.CATEGORY,
+        type: category.PERSONAL,
+      };
 
     case category.ACADEMIC:
       targetButton.classList.toggle("filter-btn-selected");
-      return [filterNames.CATEGORY, category.ACADEMIC];
+      return {
+        urgencyOrCategory: filterNames.CATEGORY,
+        type: category.ACADEMIC,
+      };
 
     case category.SOCIAL:
       targetButton.classList.toggle("filter-btn-selected");
-      return [filterNames.CATEGORY, category.SOCIAL];
+      return {
+        urgencyOrCategory: filterNames.CATEGORY,
+        type: category.SOCIAL,
+      };
     default:
   }
 };
 
-const bindFilterUpdate = (callback) => {
-  document
-    .querySelector("#urgency-filter")
-    .addEventListener("click", (event) =>
-      callback(findFilterTypeAndLevel(event))
-    );
-  document
-    .querySelector("#category-filter")
-    .addEventListener("click", (event) =>
-      callback(findFilterTypeAndLevel(event))
-    );
+const bindFilterUpdate = (handleFilterUpdate) => {
+  document.querySelector("#urgency-filter").addEventListener("click", (event) => {
+    const filterTypeAndLevel = findFilterTypeAndLevel(event);
+    if (filterTypeAndLevel) {
+      handleFilterUpdate(filterTypeAndLevel);
+    }
+  });
+  document.querySelector("#category-filter").addEventListener("click", (event) => {
+    const filterTypeAndLevel = findFilterTypeAndLevel(event);
+    if (filterTypeAndLevel) {
+      handleFilterUpdate(filterTypeAndLevel);
+    }
+  });
 };
 
-const bindCheckBoxUpdate = (callback) => {
+const bindCheckBoxUpdate = (handleCheckBoxUpdate) => {
   document
     .querySelector("#not-completed-check-box")
-    .addEventListener("change", (event) => callback(event.target.checked));
+    .addEventListener("change", (event) => handleCheckBoxUpdate(event.target.checked));
 };
 
-const bindSearchBoxUpdate = (callback) => {
+const bindSearchBoxUpdate = (handleSearchBoxUpdate) => {
   let timeOutID = undefined;
   document.querySelector("#search-input").addEventListener("input", (event) => {
     clearTimeout(timeOutID);
-    timeOutID = setTimeout(() => callback(event.target.value), 300);
+    timeOutID = setTimeout(() => handleSearchBoxUpdate(event.target.value), 300);
   });
-  document
-    .querySelector("#search-input")
-    .addEventListener("change", (event) => {
-      clearTimeout(timeOutID);
-      timeOutID = setTimeout(() => callback(event.target.value), 300);
-    });
+  document.querySelector("#search-input").addEventListener("change", (event) => {
+    clearTimeout(timeOutID);
+    timeOutID = setTimeout(() => handleSearchBoxUpdate(event.target.value), 300);
+  });
 };
 
 const bindClearSearchBtn = () => {

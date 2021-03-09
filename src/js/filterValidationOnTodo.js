@@ -1,20 +1,24 @@
-export const validateTodo = (todo, filterData) => {
+import { urgency, category } from "./constants.js";
+export const validateTodoForFilter = (todo, filterData) => {
   //collecting all consitions's true/false value
-  const noUrgencyApplied = filterData.urgencyFilterMask.every(
-    (element) => !element
+  const noUrgencyApplied = !(
+    filterData.urgencyFilterMask[urgency.LOW] ||
+    filterData.urgencyFilterMask[urgency.MEDIUM] ||
+    filterData.urgencyFilterMask[urgency.HIGH]
   );
-  const noCategoryApplied = filterData.categoryFilterMask.every(
-    (element) => !element
+  const noCategoryApplied = !(
+    filterData.categoryFilterMask[category.PERSONAL] ||
+    filterData.categoryFilterMask[category.ACADEMIC] ||
+    filterData.categoryFilterMask[category.SOCIAL]
   );
-  const isChecked = filterData.notCompletedCheckBox;
 
+  const isChecked = filterData.isIncompleteEnabled;
   const isSatifiesSearchText =
-    filterData.searchedText === "" ||
-    todo.title.toLowerCase().indexOf(filterData.searchedText) + 1;
+    filterData.searchedText === "" || todo.title.toLowerCase().indexOf(filterData.searchedText) + 1;
 
   return (
-    (filterData.urgencyFilterMask[todo.urgency] === 1 || noUrgencyApplied) &&
-    (filterData.categoryFilterMask[todo.category] === 1 || noUrgencyApplied) &&
+    (filterData.urgencyFilterMask[todo.urgency] || noUrgencyApplied) &&
+    (filterData.categoryFilterMask[todo.category] || noCategoryApplied) &&
     ((isChecked && !todo.completed) || !isChecked) &&
     isSatifiesSearchText
   );

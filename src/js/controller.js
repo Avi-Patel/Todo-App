@@ -1,5 +1,5 @@
-import { validateTodo } from "./filterValidationOnTodo.js";
-import { todoActions, urgency, category } from "./consts.js";
+import { validateTodoForFilter } from "./filterValidationOnTodo.js";
+import { todoActions, INVALID_POSITION } from "./constants.js";
 
 export class Controller {
   constructor(view, model) {
@@ -7,6 +7,8 @@ export class Controller {
     this.view = view;
 
     this.view.updateHeaderDate();
+    // this.view.bindInitialisation(this.handleInitialisation);
+    this.view.bindActionOnUnload(this.handleUnloadEvent);
     this.view.bindUndo(this.handleUndo);
     this.view.bindRedo(this.handleRedo);
     this.view.bindAddTodo(this.handleAddTodo);
@@ -14,80 +16,66 @@ export class Controller {
     this.view.bindCheckBoxUpdate(this.handleCheckBoxUpdate);
     this.view.bindSearchBoxUpdate(this.handleSearchBoxUpdate);
     this.view.bindClearSearchBtn();
-    this.view.bindToggleCompletionOfSelection(this.toggleCompletionOfSelection);
+    this.view.bindToggleCompletionOfSelection(this.toggleBulkCompletion);
     this.view.bindClearSelection(this.clearSelection);
     this.view.bindDeleteSelectedTodos(this.deleteSelectedTodos);
 
     this.model.bindStateChangeHandler(this.render);
 
     this.callbacksForTodo = {
-      handleTodoToggle: this.handleTodoToggle,
-      handleTogglingFromSelected: this.handleTogglingFromSelected,
+      handleCompletionToggle: this.handleCompletionToggle,
+      handleSelectionToggle: this.handleSelectionToggle,
       handleDeleteTodo: this.handleDeleteTodo,
       handleEditTodo: this.handleEditTodo,
     };
 
-    this.render(
-      this.model.allTodos,
-      this.model.currentlySelected,
-      this.model.filterData
-    );
+    this.render(this.model.allTodos, this.model.currentlySelected, this.model.filterData);
   }
 
   render = (todos, currentlySelectedIds, filterData) => {
-    const filteredTodos = todos.filter((todo) =>
-      validateTodo(todo, filterData)
-    );
-    // console.log(filteredTodos);
+    const filteredTodos = todos.filter((todo) => validateTodoForFilter(todo, filterData));
     this.view.analyticsUpdater.resetCounts();
-    this.view.displayTodos(
-      filteredTodos,
-      currentlySelectedIds,
-      this.callbacksForTodo
-    );
-    filteredTodos.forEach((todo) =>
-      this.view.analyticsUpdater.updateCounts(todo)
-    );
+    this.view.displayTodos(filteredTodos, currentlySelectedIds, this.callbacksForTodo);
+    filteredTodos.forEach((todo) => this.view.analyticsUpdater.updateCounts(todo));
     this.view.analyticsUpdater.updateAnalyticsOnView();
   };
 
-  createTodoObject = ({ counter, title, urgency, category }) => {
-    if (!urgency) {
-      urgency = 0;
-    }
-    if (!category) {
-      category = 0;
-    }
+  handleInitialisation = () => {
+    this.model.fetchTodos();
+  };
 
+  handleUnloadEvent = () => {
+    this.model.storeTodos();
+  };
+
+  uuid = () => {
+    const currentMilliSeconds = new Date().valueOf();
+    return currentMilliSeconds;
+  };
+
+  // handle default here
+  createTodoObject = (title, urgency = urgency.LOW, category = category.PERSONAL) => {
     return {
-      ID: counter,
+      ID: this.uuid(),
       date: new Date().toLocaleString(),
-      title: title,
-      urgency: urgency,
-      category: category,
+      title,
+      urgency,
+      category,
       completed: false,
     };
   };
 
   handleAddTodo = (title, urgency, category) => {
-    const todo = this.createTodoObject({
-      counter: this.model.getCounter(),
-      title,
-      urgency,
-      category,
+    const todo = this.createTodoObject(title, urgency, category);
+    this.model.addTodo(todo).then((addedSuccessFully) => {
+      if (addedSuccessFully) {
+        this.view.resetValuesInCreateTodoBox();
+      }
     });
-    this.model.addTodo(todo);
   };
 
-  handleFilterUpdate = (urgencyOrCategory, level) => {
-    let index = 0;
-    if (level === urgency.MEDIUM || level === category.ACADEMIC) {
-      index = 1;
-    }
-    if (level == urgency.HIGH || level === category.SOCIAL) {
-      index = 2;
-    }
-    this.model.updateFilter(urgencyOrCategory, index);
+  handleFilterUpdate = ({ urgencyOrCategory, type }) => {
+    this.model.updateFilter(urgencyOrCategory, type);
   };
 
   handleCheckBoxUpdate = (isChecked) => {
@@ -98,19 +86,18 @@ export class Controller {
     this.model.updateSearchedInput(searchInput);
   };
 
-  handleEditTodo = (todo) => {
-    const index = this.model.findIndexById(todo.ID);
-    this.model.replaceTodoAtAnyIndex(index, todo);
+  handleEditTodo = (updatedTodo) => {
+    this.model.updateTodo(updatedTodo);
   };
 
-  handleTodoToggle = (id) => {
+  handleCompletionToggle = (id) => {
     const index = this.model.findIndexById(id);
     const todoAtIndex = this.model.getTodo(index);
     const updatedTodo = { ...todoAtIndex, completed: !todoAtIndex.completed };
-    this.model.replaceTodoAtAnyIndex(index, updatedTodo);
+    this.model.updateTodo(updatedTodo);
   };
 
-  handleTogglingFromSelected = (id) => {
+  handleSelectionToggle = (id) => {
     this.model.toggleIdFromSelected(id);
   };
 
@@ -118,12 +105,17 @@ export class Controller {
     this.model.deleteTodo(id);
   };
 
-  toggleCompletionOfSelection = () => {
+  toggleBulkCompletion = () => {
     if (this.model.getCurrentlySelected().length === 0) {
       return true;
-    } else {
-      this.model.toggleCompletionInBulk();
     }
+    const updatedTodos = this.model.getCurrentlySelected().map((id) => {
+      const index = this.model.findIndexById(id);
+      const todoAtIndex = this.model.getTodo(index);
+      return { ...todoAtIndex, completed: !todoAtIndex.completed };
+    });
+
+    this.model.toggleCompletionInBulk(updatedTodos);
   };
 
   clearSelection = () => {
@@ -131,55 +123,47 @@ export class Controller {
   };
 
   deleteSelectedTodos = () => {
-    if (this.model.getCurrentlySelected().length === 0) {
-      return true;
-    } else {
-      this.model.deleteTodoInBulk();
-    }
+    return this.model.getCurrentlySelected().length === 0 || this.model.deleteTodoInBulk();
   };
 
   handleUndo = () => {
     const position = this.model.getPosition();
-    const actions = this.model.getActions();
-    console.log(actions);
-    if (position === -1) {
+    const actionsHistory = this.model.getActionsHistory();
+    if (position === INVALID_POSITION) {
       return;
     }
-    console.log(position);
 
-    switch (actions[position].command) {
+    switch (actionsHistory[position].actionType) {
       case todoActions.EDIT:
-        this.model.onEdit(actions[position], true);
+        this.model.onEdit(actionsHistory[position], true);
         break;
       case todoActions.CREATE:
-        this.model.onCreate(actions[position], true);
+        this.model.onCreate(actionsHistory[position], true);
         break;
       case todoActions.DELETE:
-        this.model.onDelete(actions[position], true);
+        this.model.onDelete(actionsHistory[position], true);
         break;
       default:
-        break;
     }
   };
   handleRedo = () => {
     const position = this.model.getPosition();
-    const actions = this.model.getActions();
-    if (position === actions.length - 1) {
+    const actionsHistory = this.model.getActionsHistory();
+    if (position === actionsHistory.length - 1) {
       return;
     }
-    console.log(position);
-    switch (actions[position + 1].command) {
+
+    switch (actionsHistory[position + 1].actionType) {
       case todoActions.EDIT:
-        this.model.onEdit(actions[position + 1], false);
+        this.model.onEdit(actionsHistory[position + 1], false);
         break;
       case todoActions.CREATE:
-        this.model.onDelete(actions[position + 1], false);
+        this.model.onDelete(actionsHistory[position + 1], false);
         break;
       case todoActions.DELETE:
-        this.model.onCreate(actions[position + 1], false);
+        this.model.onCreate(actionsHistory[position + 1], false);
         break;
       default:
-        break;
     }
   };
 }
