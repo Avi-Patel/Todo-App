@@ -1,17 +1,17 @@
-const collectTodoInputsFromDOM = (handleAddTodo) => {
+const collectTodoInputsFromDOM = (handleCreateTodo) => {
   const title = document.querySelector("#todo-title");
   const urgency = document.querySelector("#urgency-input");
   const category = document.querySelector("#category-input");
 
   if (title.value.trim() !== "") {
-    handleAddTodo(title.value, urgency.value, category.value);
+    handleCreateTodo(title.value, urgency.value, category.value);
   }
 };
 
-const bindAddTodo = (handleAddTodo) => {
+const bindCreateTodo = (handleCreateTodo) => {
   document
     .querySelector("#todo-add-btn")
-    .addEventListener("click", (event) => collectTodoInputsFromDOM(handleAddTodo));
+    .addEventListener("click", (event) => collectTodoInputsFromDOM(handleCreateTodo));
 };
 
 const resetValuesInCreateTodoBox = () => {
@@ -21,6 +21,6 @@ const resetValuesInCreateTodoBox = () => {
 };
 
 export default {
-  bindAddTodo,
+  bindCreateTodo,
   resetValuesInCreateTodoBox,
 };

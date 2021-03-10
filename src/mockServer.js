@@ -10,13 +10,7 @@
 export const createMockServer = () => {
   let todos = [];
 
-  const getIndexInDatabase = (id) => {
-    let index = null;
-    todos.forEach((todo, i) => {
-      if (todo.ID === id) index = i;
-    });
-    return index;
-  };
+  const getIndexInDatabase = (id) => todos.findIndex((todo) => todo.ID === id);
 
   const serverWorking = () => Math.random() <= 0.98;
 
@@ -61,8 +55,8 @@ export const createMockServer = () => {
           idsAsArray.forEach((id, i) => {
             const index = getIndexInDatabase(id);
             todos = todos
-              .splice(0, index)
-              .concat({ ...updatedTodosAsArray[i] }, todos.splice(index + 1));
+              .slice(0, index)
+              .concat({ ...updatedTodosAsArray[i] }, todos.slice(index + 1));
           });
           resolve();
         } else {
@@ -77,7 +71,7 @@ export const createMockServer = () => {
 
           idsAsArray.forEach((id) => {
             const index = getIndexInDatabase(id);
-            todos = todos.splice(0, index).concat(todos.splice(index + 1));
+            todos = todos.slice(0, index).concat(todos.slice(index + 1));
           });
           resolve();
         } else {
