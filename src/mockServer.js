@@ -61,8 +61,8 @@ export const createMockServer = () => {
           idsAsArray.forEach((id, i) => {
             const index = getIndexInDatabase(id);
             todos = todos
-              .splice(0, index)
-              .concat({ ...updatedTodosAsArray[i] }, todos.splice(index + 1));
+              .slice(0, index)
+              .concat({ ...updatedTodosAsArray[i] }, todos.slice(index + 1));
           });
           resolve();
         } else {
@@ -77,7 +77,7 @@ export const createMockServer = () => {
 
           idsAsArray.forEach((id) => {
             const index = getIndexInDatabase(id);
-            todos = todos.splice(0, index).concat(todos.splice(index + 1));
+            todos = todos.slice(0, index).concat(todos.slice(index + 1));
           });
           resolve();
         } else {
