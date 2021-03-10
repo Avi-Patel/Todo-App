@@ -32,10 +32,7 @@ export class Controller {
     };
 
     this.view = new View(this.handlerConfig);
-    this.model = new Model();
-
-    this.model.bindStateChangeHandler(this.render);
-    this.render(this.model.allTodos, this.model.currentlySelected, this.model.filterData);
+    this.model = new Model(this.render);
   }
 
   render = (todos, currentlySelectedIds, filterData) => {
@@ -80,8 +77,8 @@ export class Controller {
     });
   };
 
-  handleFilterUpdate = ({ urgencyOrCategory, type }) => {
-    this.model.updateFilter(urgencyOrCategory, type);
+  handleFilterUpdate = ({ type, level }) => {
+    this.model.updateFilter(type, level);
   };
 
   handleCheckBoxUpdate = (isChecked) => {

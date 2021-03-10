@@ -3,7 +3,7 @@ import { showSnackbar } from "./helper-functions.js";
 import { todoActions, filterNames, INVALID_POSITION } from "./constants.js";
 
 export class Model {
-  constructor() {
+  constructor(render) {
     this.allTodos = [];
     this.currentlySelected = [];
     this.filterData = {
@@ -15,11 +15,10 @@ export class Model {
     this.position = INVALID_POSITION;
     this.actionsHistory = [];
     this.mockServer = createMockServer();
+    this.render = render;
   }
-
-  bindStateChangeHandler = (render) => (this.stateChangeHandler = render);
   runStateChangeHandler = () => {
-    this.stateChangeHandler(this.allTodos, this.currentlySelected, this.filterData);
+    this.render(this.allTodos, this.currentlySelected, this.filterData);
   };
 
   //utilities for accessing model data
@@ -27,13 +26,7 @@ export class Model {
   getActionsHistory = () => this.actionsHistory;
   getTodo = (index) => this.allTodos[index];
 
-  findIndexById = (id) => {
-    let index;
-    this.allTodos.forEach((todo, i) => {
-      if (todo.ID === id) index = i;
-    });
-    return index;
-  };
+  findIndexById = (id) => this.allTodos.findIndex((todo) => todo.ID === id);
 
   removeCurrentlySelectedIds = () => {
     this.currentlySelected = [];
@@ -43,14 +36,13 @@ export class Model {
   getCurrentlySelected = () => this.currentlySelected;
 
   findIndexToInsert = (id) => {
-    let index = this.allTodos.length;
-    this.allTodos.forEach((todo, i) => {
-      if (todo.ID > id && i > 0 && this.allTodos[i - 1].ID < id) {
-        index = i;
-      }
-    });
+    let index = this.allTodos.findIndex(
+      (todo, i) => todo.ID > id && i > 0 && this.allTodos[i - 1].ID < id
+    );
     if (this.allTodos.length === 0 || id < this.allTodos[0].ID) {
       index = 0;
+    } else if (index === -1) {
+      index = this.allTodos.length;
     }
     return index;
   };
@@ -83,17 +75,16 @@ export class Model {
     this.runStateChangeHandler();
   };
 
-  updateFilter = (urgencyOrCategory, type) => {
-    if (urgencyOrCategory === filterNames.URGENCY) {
+  updateFilter = (type, level) => {
+    if (type === filterNames.URGENCY) {
       const urgencyFilterMask = this.filterData.urgencyFilterMask;
-      urgencyFilterMask[type] = !urgencyFilterMask[type];
+      urgencyFilterMask[level] = !urgencyFilterMask[level];
       this.filterData = { ...this.filterData, urgencyFilterMask };
     } else {
       const categoryFilterMask = this.filterData.categoryFilterMask;
-      categoryFilterMask[type] = !categoryFilterMask[type];
+      categoryFilterMask[level] = !categoryFilterMask[level];
       this.filterData = { ...this.filterData, categoryFilterMask };
     }
-    console.log(this.filterData);
     this.runStateChangeHandler();
   };
 

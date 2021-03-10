@@ -38,3 +38,6 @@ export const filterNames = {
 };
 
 export const INVALID_POSITION = -1;
+
+export const urgencyOptions = [urgency.LOW, urgency.MEDIUM, urgency.HIGH];
+export const categoryOptions = [category.PERSONAL, category.ACADEMIC, category.SOCIAL];

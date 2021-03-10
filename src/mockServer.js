@@ -10,13 +10,7 @@
 export const createMockServer = () => {
   let todos = [];
 
-  const getIndexInDatabase = (id) => {
-    let index = null;
-    todos.forEach((todo, i) => {
-      if (todo.ID === id) index = i;
-    });
-    return index;
-  };
+  const getIndexInDatabase = (id) => todos.findIndex((todo) => todo.ID === id);
 
   const serverWorking = () => Math.random() <= 0.98;
 

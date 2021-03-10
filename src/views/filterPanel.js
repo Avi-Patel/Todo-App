@@ -1,4 +1,4 @@
-import { urgency, category, filterNames } from "../constants.js";
+import { urgency, category, filterNames, urgencyOptions, categoryOptions } from "../constants.js";
 import { extractClosestNodeFromPath } from "../helper-functions.js";
 
 export class FilterPanel {
@@ -15,42 +15,11 @@ export class FilterPanel {
         : extractClosestNodeFromPath(event, "button");
 
     if (!targetButton) return;
-
-    switch (targetButton.id) {
-      case urgency.LOW:
-        targetButton.classList.toggle("filter-btn-selected");
-        return { urgencyOrCategory: filterNames.URGENCY, type: urgency.LOW };
-
-      case urgency.MEDIUM:
-        targetButton.classList.toggle("filter-btn-selected");
-        return { urgencyOrCategory: filterNames.URGENCY, type: urgency.MEDIUM };
-
-      case urgency.HIGH:
-        targetButton.classList.toggle("filter-btn-selected");
-        return { urgencyOrCategory: filterNames.URGENCY, type: urgency.HIGH };
-
-      case category.PERSONAL:
-        targetButton.classList.toggle("filter-btn-selected");
-        return {
-          urgencyOrCategory: filterNames.CATEGORY,
-          type: category.PERSONAL,
-        };
-
-      case category.ACADEMIC:
-        targetButton.classList.toggle("filter-btn-selected");
-        return {
-          urgencyOrCategory: filterNames.CATEGORY,
-          type: category.ACADEMIC,
-        };
-
-      case category.SOCIAL:
-        targetButton.classList.toggle("filter-btn-selected");
-        return {
-          urgencyOrCategory: filterNames.CATEGORY,
-          type: category.SOCIAL,
-        };
-      default:
-    }
+    targetButton.classList.toggle("filter-btn-selected");
+    return {
+      type: urgencyOptions.includes(targetButton.id) ? filterNames.URGENCY : filterNames.CATEGORY,
+      level: targetButton.id,
+    };
   };
 
   applyDOMEventListeners = () => {
