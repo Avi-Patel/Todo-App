@@ -31,7 +31,7 @@ export const createMockServer = () => {
 
     storeTodosToDatabase: () =>
       new Promise((resolve, reject) => {
-        localStorage.setItem("todos", JSON.stringify(todos));
+        // localStorage.setItem("todos", JSON.stringify(todos));
         resolve();
       }),
 
