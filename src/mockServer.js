@@ -17,15 +17,15 @@ export const createMockServer = () => {
   return {
     getTodosFromDatabase: () =>
       new Promise((resolve, reject) => {
-        let storedTodos = JSON.parse(localStorage.getItem("todos"));
+        // let storedTodos = JSON.parse(localStorage.getItem("todos"));
         const newTodos = [];
-        if (storedTodos) {
-          todos = [];
-          storedTodos.forEach((todo) => {
-            todos = todos.concat(todo);
-            newTodos.push({ ...todo });
-          });
-        }
+        // if (storedTodos) {
+        //   todos = [];
+        //   storedTodos.forEach((todo) => {
+        //     todos = todos.concat(todo);
+        //     newTodos.push({ ...todo });
+        //   });
+        // }
         resolve(newTodos);
       }),
 
