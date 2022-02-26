@@ -59,7 +59,7 @@ export class Controller {
   // handle default here
   createTodoObject = (title, urgency = urgency.LOW, category = category.PERSONAL) => {
     return {
-      ID: this.uuid(),
+      id: this.uuid(),
       date: new Date().toLocaleString(),
       title,
       urgency,
@@ -132,6 +132,7 @@ export class Controller {
   handleUndo = () => {
     const position = this.model.getPosition();
     const actionsHistory = this.model.getActionsHistory();
+
     if (position === INVALID_POSITION) {
       return;
     }

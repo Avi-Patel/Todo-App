@@ -5,12 +5,12 @@
 //   resolve();
 // });
 
-// const sortTodosByID = (todo1, Todo2) => todo1.ID - Todo2.ID;
+// const sortTodosByID = (todo1, Todo2) => todo1.id - Todo2.id;
 
 export const createMockServer = () => {
   let todos = [];
 
-  const getIndexInDatabase = (id) => todos.findIndex((todo) => todo.ID === id);
+  const getIndexInDatabase = (id) => todos.findIndex((todo) => todo.id === id);
 
   const serverWorking = () => Math.random() <= 0.98;
 

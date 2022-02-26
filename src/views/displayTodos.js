@@ -21,7 +21,7 @@ const createTodoNode = (todo, todoEventHandlers) => {
     "b12",
     todo.completed ? "reduceOpacity" : "originalOpacity"
   );
-  todoNode.setAttribute("data-id", todo.ID.toString());
+  todoNode.setAttribute("data-id", todo.id.toString());
 
   todoNode.innerHTML = `<div class="topTwoBtns">
     <button class="iconBtn iconBtnExtra visiblyAltered" data-type="edit"><i class="fa fa-pencil cwhite" ></i></button>
@@ -84,7 +84,7 @@ export const displayTodos = (todos, currentlySelectedIds, todoEventHandlers) => 
 
   todos.forEach((todo) => {
     const newtodoNode = createTodoNode(todo, todoEventHandlers);
-    if (currentlySelectedIds.indexOf(todo.ID) !== -1) {
+    if (currentlySelectedIds.indexOf(todo.id) !== -1) {
       newtodoNode.querySelector(`[data-type=${todoActions.SELECT}]`).classList.toggle("blueCircle");
     }
     document.querySelector("#todos-box").appendChild(newtodoNode);

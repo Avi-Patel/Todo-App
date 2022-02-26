@@ -26,7 +26,7 @@ export class Model {
   getActionsHistory = () => this.actionsHistory;
   getTodo = (index) => this.allTodos[index];
 
-  findIndexById = (id) => this.allTodos.findIndex((todo) => todo.ID === id);
+  findIndexById = (id) => this.allTodos.findIndex((todo) => todo.id === id);
 
   removeCurrentlySelectedIds = () => {
     this.currentlySelected = [];
@@ -35,14 +35,12 @@ export class Model {
 
   getCurrentlySelected = () => this.currentlySelected;
 
-  findIndexToInsert = (id) => {
-    let index = this.allTodos.findIndex(
-      (todo, i) => todo.ID > id && i > 0 && this.allTodos[i - 1].ID < id
-    );
-    if (this.allTodos.length === 0 || id < this.allTodos[0].ID) {
+  findIndexToInsert = (id, todos) => {
+    let index = todos.findIndex((todo, i) => todo.id > id && i > 0 && todos[i - 1].id < id);
+    if (todos.length === 0 || id < todos[0].id) {
       index = 0;
     } else if (index === -1) {
-      index = this.allTodos.length;
+      index = todos.length;
     }
     return index;
   };
@@ -52,10 +50,10 @@ export class Model {
     this.actionsHistory = this.actionsHistory.slice(0, this.position + 1);
     const newAction = {
       actionType,
-      Ids: todoIds,
+      ids: todoIds,
     };
     if (updatedTodos) {
-      newAction["todos"] = updatedTodos;
+      newAction["updatedTodos"] = updatedTodos;
     }
     if (oldTodos) {
       newAction["oldTodos"] = oldTodos;
@@ -118,7 +116,7 @@ export class Model {
       .createTodoInDatabase(newTodo)
       .then(() => {
         this.allTodos = this.allTodos.concat(newTodo);
-        this.addActions(todoActions.CREATE, [newTodo.ID], [newTodo]);
+        this.addActions(todoActions.CREATE, [newTodo.id], [newTodo]);
         this.runStateChangeHandler();
         return true;
       })
@@ -134,26 +132,24 @@ export class Model {
       .then(() => {
         const index = this.findIndexById(id);
         this.addActions(todoActions.DELETE, [id], undefined, [this.allTodos[index]]);
-        this.allTodos = this.allTodos.slice(0, index).concat(this.allTodos.slice(index + 1));
+        this.allTodos = this.allTodos.filter((todo) => todo.id !== id);
         this.runStateChangeHandler();
       })
       .catch(showSnackbar);
   };
 
   updateTodo = (updatedTodo) => {
-    const index = this.findIndexById(updatedTodo.ID);
+    const index = this.findIndexById(updatedTodo.id);
     this.mockServer
-      .updateTodoInDatabase(updatedTodo.ID, updatedTodo)
+      .updateTodoInDatabase(updatedTodo.id, updatedTodo)
       .then(() => {
         this.addActions(
           todoActions.EDIT,
-          [updatedTodo.ID],
+          [updatedTodo.id],
           [{ ...updatedTodo }],
           [this.allTodos[index]]
         );
-        this.allTodos = this.allTodos
-          .slice(0, index)
-          .concat(updatedTodo, this.allTodos.slice(index + 1));
+        this.allTodos[index] = { ...updatedTodo };
         this.runStateChangeHandler();
       })
       .catch(showSnackbar);
@@ -170,12 +166,10 @@ export class Model {
     this.mockServer
       .updateTodoInDatabase(this.currentlySelected, updatedTodos)
       .then(() => {
-        this.currentlySelected.forEach((id, i) => {
+        this.allTodos = this.currentlySelected.reduce((acc, id, i) => {
           const index = this.findIndexById(id);
-          this.allTodos = this.allTodos
-            .slice(0, index)
-            .concat({ ...updatedTodos[i] }, this.allTodos.slice(index + 1));
-        });
+          acc[index] = { ...updatedTodos[i] };
+        }, this.allTodos);
         this.addActions(todoActions.EDIT, [...this.currentlySelected], updatedTodos, oldTodos);
         this.currentlySelected = [];
         this.runStateChangeHandler();
@@ -184,14 +178,11 @@ export class Model {
   };
 
   getDeletedTodos = () => {
-    const deletedTodos = [];
-    this.currentlySelected.forEach((id) => {
-      const index = this.findIndexById(id);
-      deletedTodos.push({
-        ...this.allTodos[index],
-      });
-      this.allTodos = this.allTodos.slice(0, index).concat(this.allTodos.slice(index + 1));
-    });
+    const indices = this.currentlySelected.map((id) => this.findIndexById(id));
+    const deletedTodos = indices.map((index) => ({ ...this.allTodos[index] }));
+    this.allTodos = this.allTodos.filter(
+      (todo) => this.currentlySelected.findIndex((id) => id === todo.id) === -1
+    );
     return deletedTodos;
   };
 
@@ -210,14 +201,11 @@ export class Model {
   // undo redo handlers for perticular action stored in history content.
   onCreate = (action, isUndo) => {
     this.mockServer
-      .deleteTodoFromDatabase(action.Ids)
+      .deleteTodoFromDatabase(action.ids)
       .then(() => {
-        const allTodos = [...this.allTodos];
-        action.Ids.forEach((id) => {
-          const index = this.findIndexById(id);
-          this.allTodos = this.allTodos.slice(0, index).concat(this.allTodos.slice(index + 1));
-        });
-        this.allTodos = allTodos;
+        this.allTodos = this.allTodos.filter(
+          (todo) => action.ids.findIndex((id) => id === todo.id) === -1
+        );
         isUndo ? this.position-- : this.position++;
         this.runStateChangeHandler();
       })
@@ -225,14 +213,18 @@ export class Model {
   };
 
   onDelete = (action, isUndo) => {
-    const todosToBeCreated = isUndo ? action.oldTodos : action.UpdatedTodos;
+    const todosToBeCreated = isUndo ? action.oldTodos : action.updatedTodos;
     this.mockServer
       .createTodoInDatabase(todosToBeCreated)
       .then(() => {
-        todosToBeCreated.forEach((todo, i) => {
-          const index = this.findIndexToInsert(action.Ids[i]);
-          this.allTodos = this.allTodos.slice(0, index).concat(todo, this.allTodos.slice(index));
-        });
+        this.allTodos = todosToBeCreated.reduce(
+          (acc, todo, i) => {
+            const index = this.findIndexToInsert(action.ids[i], acc);
+            acc = acc.slice(0, index).concat(todo, acc.slice(index));
+            return acc;
+          },
+          [...this.allTodos]
+        );
         isUndo ? this.position-- : this.position++;
         this.runStateChangeHandler();
       })
@@ -240,15 +232,16 @@ export class Model {
   };
 
   onEdit = (action, isUndo) => {
-    const todosForUpdation = isUndo ? action.oldTodos : action.UpdatedTodos;
+    const todosForUpdation = isUndo ? action.oldTodos : action.updatedTodos;
     this.mockServer
-      .updateTodoInDatabase(action.Ids, todosForUpdation)
+      .updateTodoInDatabase(action.ids, todosForUpdation)
       .then(() => {
-        action.Ids.forEach((id, i) => {
-          const index = this.findIndexById(id);
-          this.allTodos = this.allTodos
-            .slice(0, index)
-            .concat(todosForUpdation[i], this.allTodos.slice(index + 1));
+        this.allTodos = this.allTodos.map((todo) => {
+          const index = action.ids.findIndex((id) => id === todo.id);
+          if (index !== -1) {
+            return todosForUpdation[index];
+          }
+          return todo;
         });
         isUndo ? this.position-- : this.position++;
         this.runStateChangeHandler();
